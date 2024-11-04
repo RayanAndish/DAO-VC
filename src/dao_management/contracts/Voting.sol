@@ -8,17 +8,29 @@ contract Voting {
         uint voteCount;
     }
 
-    mapping(uint => Proposal) public proposals;
+    address public admin;
     uint public proposalCount;
+    mapping(uint => Proposal) public proposals;
     mapping(address => mapping(uint => bool)) public votes;
 
-    function createProposal(string memory description) public {
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can perform this action");
+        _;
+    }
+
+    constructor() {
+        admin = msg.sender;
+    }
+
+    function createProposal(string memory description) public onlyAdmin {
         proposalCount++;
         proposals[proposalCount] = Proposal(proposalCount, description, 0);
     }
 
     function vote(uint proposalId) public {
         require(!votes[msg.sender][proposalId], "Already voted");
+        require(proposals[proposalId].id != 0, "Proposal does not exist");
+
         votes[msg.sender][proposalId] = true;
         proposals[proposalId].voteCount++;
     }
