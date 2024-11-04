@@ -1,0 +1,5 @@
+{
+  "blockchain_rpc_url": "http://172.16.22.120:8545",
+  "consensus_algorithm": "PoA-dPoS-AI",
+  "node_count": 3
+}

@@ -1,0 +1,14 @@
+{
+  "name": "token-service",
+  "version": "1.0.0",
+  "description": "Token management service for DAO-VC",
+  "main": "token.js",
+  "scripts": {
+    "start": "node token.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^10.0.0",
+    "ethers": "^5.6.9"
+  }
+}

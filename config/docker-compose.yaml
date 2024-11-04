@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  blockchain:
+    build:
+      context: ../src/blockchain
+    ports:
+      - "8545:8545"
+    env_file:
+      - ../src/blockchain/.env
+    networks:
+      - dao-vc-network
+
+  consensus:
+    build:
+      context: ../src/consensus
+    ports:
+      - "30303:30303"
+    networks:
+      - dao-vc-network
+
+  token_service:
+    build:
+      context: ../src/token_service
+    ports:
+      - "4000:4000"
+    env_file:
+      - ../src/token_service/.env
+    networks:
+      - dao-vc-network
+
+  dao_management:
+    build:
+      context: ../src/dao_management
+    ports:
+      - "8080:8080"
+    networks:
+      - dao-vc-network
+
+  ai_service:
+    build:
+      context: ../src/ai_service
+    ports:
+      - "5000:5000"
+    networks:
+      - dao-vc-network
+
+  api_gateway:
+    build:
+      context: ../src/api_gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - dao-vc-network
+
+networks:
+  dao-vc-network:
+    driver: bridge

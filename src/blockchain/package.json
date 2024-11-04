@@ -1,0 +1,14 @@
+{
+  "name": "blockchain-service",
+  "version": "1.0.0",
+  "description": "Blockchain service for DAO-VC",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "web3": "^1.7.3",
+    "dotenv": "^10.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "dao-management",
+  "version": "1.0.0",
+  "description": "DAO management service for VC",
+  "main": "dao.js",
+  "scripts": {
+    "start": "node dao.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^10.0.0"
+  }
+}
