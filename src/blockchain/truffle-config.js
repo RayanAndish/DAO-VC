@@ -5,7 +5,7 @@ module.exports = {
   networks: {
     // شبکه محلی برای تست با Ganache
     development: {
-      host: "127.0.0.1",     // آدرس سرور Ganache یا IP سرور دیگر
+      host: "172.16.22.120",     // آدرس سرور Ganache یا IP سرور دیگر
       port: 8545,            // پورت پیش‌فرض Ganache
       network_id: "*"        // هر شبکه‌ای، برای تست محلی
     },
