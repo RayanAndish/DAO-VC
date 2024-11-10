@@ -3,28 +3,18 @@ require('dotenv').config();
 
 module.exports = {
   networks: {
-    // شبکه محلی برای تست با Ganache
-    development: {
-      host: "172.16.22.120",     // آدرس سرور Ganache یا IP سرور دیگر
-      port: 8545,            // پورت پیش‌فرض Ganache
-      network_id: "*"        // هر شبکه‌ای، برای تست محلی
-    },
-    // شبکه اصلی اتریوم یا تست‌نت (مانند Ropsten) برای استفاده آتی
-    ropsten: {
-      provider: () =>
-        new HDWalletProvider(process.env.MNEMONIC, `https://ropsten.infura.io/v3/${process.env.INFURA_PROJECT_ID}`),
-      network_id: 3,       // شناسه شبکه Ropsten
-      gas: 5500000,        // محدودیت گس
-      confirmations: 2,    // تعداد تایید‌ها برای انتقال
-      timeoutBlocks: 200,  // تعداد بلاک‌ها برای زمان انتظار
-      skipDryRun: true
-    }
+  development: {
+    host: "127.0.0.1",  // آدرس IP سرور Ganache
+    port: 9545,             // پورت Ganache
+    network_id: "*",        // شبکه دلخواه
+    gas: 8000000,           // افزایش Gas Limit
+    gasPrice: 20000000000   // 20 gwei
   },
-
+},
   // تنظیمات کامپایلر
   compilers: {
     solc: {
-      version: "0.8.0",       // نسخه Solidity
+      version: "0.8.20",       // نسخه Solidity
       settings: {             // تنظیمات بهینه‌سازی
         optimizer: {
           enabled: true,
