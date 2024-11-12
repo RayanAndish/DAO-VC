@@ -1,2 +1,44 @@
+# Ignore node_modules directory (for JavaScript/Node.js projects)
+node_modules/
+
+# Ignore system files
+*.log
+*.tmp
+*.pid
+*.swp
+.DS_Store
+Thumbs.db
+
+# Ignore build artifacts and dependencies
+/build/
+/dist/
+/out/
+
+# Ignore OS-specific files
+.idea/
+.vscode/
+.history/
+
+# Ignore node_modules and Python package directories
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment directories
 .venv/
-**/src/api_gateway/node_modules
+env/
+venv/
+
+# Ignore all node_modules and __pycache__ folders recursively
+**/node_modules/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment directories in any subdirectory
+**/.venv/
+**/env/
+**/venv/
