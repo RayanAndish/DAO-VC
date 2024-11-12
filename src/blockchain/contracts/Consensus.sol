@@ -8,8 +8,9 @@ contract HybridConsensus {
     struct Validator {
         address validatorAddress;
         uint256 stake;
-        uint256 reputation; // امتیاز اعتبار که براساس مدل هوش مصنوعی بروز می‌شود
+        uint256 reputation; // امتیاز اعتبار که براساس مدل هوش مصنوعی و dPoS بروز می‌شود
         bool isValidator;
+        uint lastParticipationBlock; // آخرین بلاک که در آن شرکت داشته‌اند
     }
 
     struct Proposal {
@@ -21,7 +22,7 @@ contract HybridConsensus {
     }
 
     mapping(address => Validator) public validators;
-    mapping(address => address) public delegations;
+    mapping(address => address) public delegations; // نماینده‌ها
     mapping(uint => Proposal) public proposals;
     uint public proposalCount;
     address[] public validatorList;
@@ -36,14 +37,14 @@ contract HybridConsensus {
         _;
     }
 
-    constructor() {
-        admin = msg.sender;
+    constructor(address _daoAddress) {
+        admin = _daoAddress;
     }
 
-    // افزودن یک اعتبارسنج جدید با مکانیزم PoA
+    // افزودن یک اعتبارسنج جدید با مدل PoA و مشارکت dPoS
     function addValidator(address validatorAddress, uint256 initialStake) external onlyAdmin {
         require(!validators[validatorAddress].isValidator, "Validator already exists");
-        validators[validatorAddress] = Validator(validatorAddress, initialStake, 0, true);
+        validators[validatorAddress] = Validator(validatorAddress, initialStake, 0, true, block.number);
         validatorList.push(validatorAddress);
         validatorCount++;
     }
@@ -55,7 +56,7 @@ contract HybridConsensus {
         validatorCount--;
     }
 
-    // ایجاد پروپوزال جدید بدون تخصیص مستقیم
+     // ایجاد پروپوزال جدید توسط مدیر
     function createProposal(string memory description) external onlyAdmin {
         proposalCount++;
         Proposal storage newProposal = proposals[proposalCount];
@@ -65,10 +66,25 @@ contract HybridConsensus {
         newProposal.voteCountNo = 0;
     }
 
-    // تابع رأی‌گیری توسط اعتبارسنج‌ها
-    function voteProposal(uint proposalId, bool support) external onlyValidator {
+    // تخصیص نماینده برای رأی‌دهی (dPoS)
+    function delegateVote(address validatorAddress) external {
+        require(validators[validatorAddress].isValidator, "Address is not a validator");
+        delegations[msg.sender] = validatorAddress;
+    }
+
+    // رأی‌دهی توسط اعتبارسنج‌ها یا نمایندگان کاربران
+    function voteProposal(uint proposalId, bool support) external {
+        address voter = msg.sender;
+
+        // بررسی اینکه آیا کاربر نماینده‌ای برای رأی دارد
+        if (delegations[msg.sender] != address(0)) {
+            voter = delegations[msg.sender];
+        }
+
+        require(validators[voter].isValidator, "Voter must be a validator or a delegate");
+        
         Proposal storage proposal = proposals[proposalId];
-        require(!proposal.hasVoted[msg.sender], "Validator has already voted on this proposal");
+        require(!proposal.hasVoted[voter], "Validator has already voted on this proposal");
 
         if (support) {
             proposal.voteCountYes++;
@@ -76,6 +92,9 @@ contract HybridConsensus {
             proposal.voteCountNo++;
         }
 
+        // به‌روزرسانی امتیاز اعتبار و بلاک مشارکت
+        validators[msg.sender].reputation += 1; // افزایش امتیاز اعتبار به ازای هر رأی
+        validators[msg.sender].lastParticipationBlock = block.number;
         proposal.hasVoted[msg.sender] = true;
     }
 
@@ -85,7 +104,7 @@ contract HybridConsensus {
         return (proposal.description, proposal.voteCountYes, proposal.voteCountNo);
     }
 
-    // تابع بررسی وضعیت اعتبارسنج بودن یک حساب
+    // بررسی وضعیت اعتبارسنج بودن یک حساب
     function isValidator(address account) public view returns (bool) {
         return validators[account].isValidator;
     }
@@ -93,5 +112,20 @@ contract HybridConsensus {
     // دریافت لیست اعتبارسنج‌ها
     function getValidators() public view returns (address[] memory) {
         return validatorList;
+    }
+
+    // پاداش‌دهی به اعتبارسنج‌ها براساس مشارکت
+    function rewardValidators() external onlyAdmin {
+        for (uint i = 0; i < validatorList.length; i++) {
+            address validatorAddress = validatorList[i];
+            Validator storage validator = validators[validatorAddress];
+	    
+	    // بررسی فعالیت اعتبارسنج‌ها و پاداش‌دهی به آن‌ها
+            if (block.number - validator.lastParticipationBlock < 100) {// بررسی مشارکت در 100 بلاک اخیر
+                validator.reputation += 10; // پاداش به اعتبارسنج‌های فعال
+            } else {
+                validator.reputation -= 1; // کاهش امتیاز اعتبار برای عدم فعالیت
+            }
+        }
     }
 }

@@ -3116,12 +3116,12 @@
     "1731167271929": {
       "events": {},
       "links": {},
-      "address": "0x6eD79Aa1c71FD7BdBC515EfdA3Bd4e26394435cC",
-      "transactionHash": "0x98dc81725bc66cdfc1d2ffaf548f0087c88839cb9b8a965dc0fdb3e7dfd22b8b"
+      "address": "0x4bf749ec68270027C5910220CEAB30Cc284c7BA2",
+      "transactionHash": "0xf6fe959505c0d13bb110249a4a6e36d7da2c68fd8621194828d10d1b99059c62"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-11-10T06:26:41.625Z",
+  "updatedAt": "2024-11-11T12:02:30.239Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
