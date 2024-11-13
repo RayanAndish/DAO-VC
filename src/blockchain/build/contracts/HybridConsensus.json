@@ -13600,12 +13600,12 @@
     "1731393785449": {
       "events": {},
       "links": {},
-      "address": "0x86072CbFF48dA3C1F01824a6761A03F105BCC697",
-      "transactionHash": "0x3086026571f27150fac0945cbfe244c019a8be5757c884f16410b8a198f51c6c"
+      "address": "0xCeeFD27e0542aFA926B87d23936c79c276A48277",
+      "transactionHash": "0x3941fa0762470bf4ee170fff033095a22d995fd217b9f7b320301317d70df305"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-11-12T18:09:22.132Z",
+  "updatedAt": "2024-11-13T06:03:02.692Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

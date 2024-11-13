@@ -13,10 +13,7 @@ contract Token is ERC20, Ownable {
     mapping(address => uint256) public customFeeRates;
     mapping(address => address) public oracleAddresses;
 
-    constructor(uint256 initialSupply, address _daoAddress) 
-        ERC20("Rayan Andish Token", "RATK") 
-        Ownable(msg.sender) 
-    {
+    constructor(uint256 initialSupply, address _daoAddress) ERC20("Rayan Andish Token", "RATK") Ownable(msg.sender) {
         _mint(msg.sender, initialSupply);
         feeCollector = msg.sender;
         daoAddress = _daoAddress;

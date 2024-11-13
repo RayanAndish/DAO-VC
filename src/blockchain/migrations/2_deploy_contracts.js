@@ -5,10 +5,10 @@ const HybridConsensus = artifacts.require("HybridConsensus"); // تغییر نا
 
 module.exports = async function (deployer, network, accounts) {
     // متغیرهای حساس و امنیتی
-    const initialSupply = process.env.INITIAL_SUPPLY || 1000000;
-    const daoAddress = process.env.DAO_ADDRESS || accounts[0]; // انتخاب حساب اول به عنوان آدرس DAO
-    const votingFeeRate = process.env.VOTING_FEE_RATE || 1; // مقدار کارمزد رأی‌دهی (در صدها)
-    const feeCollector = process.env.FEE_COLLECTOR || accounts[1]; // آدرس جمع‌آوری‌کننده کارمزدها
+    const initialSupply = process.env.INITIAL_SUPPLY;
+    const daoAddress = process.env.DAO_ADDRESS; // انتخاب حساب اول به عنوان آدرس DAO
+    const votingFeeRate = process.env.VOTING_FEE_RATE; // مقدار کارمزد رأی‌دهی (در صدها)
+    const feeCollector = process.env.FEE_COLLECTOR; // آدرس جمع‌آوری‌کننده کارمزدها
 
 
     // چک کردن آدرس DAO

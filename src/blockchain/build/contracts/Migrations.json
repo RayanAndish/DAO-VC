@@ -1099,12 +1099,12 @@
     "1731393785449": {
       "events": {},
       "links": {},
-      "address": "0x4bf749ec68270027C5910220CEAB30Cc284c7BA2",
-      "transactionHash": "0xb47b31d8de00f41b1bfb750e9c538bdeaa8e786ee7a42c4125485975c9ad41e5"
+      "address": "0xdAA71FBBA28C946258DD3d5FcC9001401f72270F",
+      "transactionHash": "0x05a860c32c1e77d40e4a22c25d1f300dd52047a5c0b68d062d74bdeb624b2928"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-11-12T18:09:22.143Z",
+  "updatedAt": "2024-11-13T06:03:02.701Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
