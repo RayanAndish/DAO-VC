@@ -77,10 +77,28 @@ contract Voting is Ownable {
     }
 
     // مشاهده نتیجه پروپوزال و تعداد آرای هر گزینه
-    function getProposalResults(uint proposalId) external view returns (string memory description, uint[] memory voteCounts) {
-        Proposal storage proposal = proposals[proposalId];
-        return (proposal.description, proposal.voteCounts);
-    }
+	function getProposal(uint proposalId) 
+	    public 
+	    view 
+	    returns (
+	        uint id, 
+	        string memory description, 
+	        uint startTime, 
+	        uint endTime, 
+	        uint[] memory voteCounts, 
+        	bool finalized
+	    ) 
+	{
+	    Proposal storage proposal = proposals[proposalId];
+	    return (
+	        proposal.id,
+	        proposal.description,
+	        proposal.startTime,
+	        proposal.endTime,
+	        proposal.voteCounts,
+	        proposal.finalized
+	    );
+	}
 
     // مشاهده وضعیت پروپوزال برای اطلاع از پایان یا ادامه‌ی رأی‌گیری
     function isVotingActive(uint proposalId) public view returns (bool) {
