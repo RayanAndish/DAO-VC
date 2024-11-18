@@ -6,26 +6,7 @@
       "result": "1000000",
       "expected": "1000000",
       "success": true
-    },
-Token Tests:
-
-Initial Token Balance Check:
-موجودی اولیه (1000000) با مقدار مورد انتظار مطابقت دارد. تست موفق است.
-
-
-    {
-      "test": "Token Transfer Check",
-      "from": "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1",
-      "to": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
-      "amount": 100,
-      "fee": 1,
-      "expectedBalance": "99",
-      "result": "99",
-      "success": true
     }
-Token Transfer Check:
-انتقال 100 توکن با کارمزد 1% به درستی انجام شده است. موجودی دریافت‌کننده (99) با مقدار مورد انتظار مطابقت دارد.
-
   ],
   "votingTests": [
     {
@@ -41,12 +22,6 @@ Token Transfer Check:
       "finalized": false,
       "success": true
     }
-
-Voting Tests:
-
-Proposal Creation and Details Check:
-پروپوزال با موفقیت ایجاد شده و زمان‌های شروع و پایان درست تنظیم شده است. تعداد رأی‌ها برای هر گزینه صفر است که نشان‌دهنده عدم وجود رأی‌دهی است.
-
   ],
   "consensusTests": [
     {
@@ -57,7 +32,26 @@ Proposal Creation and Details Check:
   ]
 }
 
-Consensus Tests:
+---
 
-Add Validator Check:
+### Token Tests:
+
+#### Initial Token Balance Check:
+موجودی اولیه (1000000) با مقدار مورد انتظار مطابقت دارد. تست موفق است.
+
+#### Token Transfer Check:
+انتقال 100 توکن با کارمزد 1% به درستی انجام شده است. موجودی دریافت‌کننده (99) با مقدار مورد انتظار مطابقت دارد.
+
+---
+
+### Voting Tests:
+
+#### Proposal Creation and Details Check:
+پروپوزال با موفقیت ایجاد شده و زمان‌های شروع و پایان درست تنظیم شده است. تعداد رأی‌ها برای هر گزینه صفر است که نشان‌دهنده عدم وجود رأی‌دهی است.
+
+---
+
+### Consensus Tests:
+
+#### Add Validator Check:
 اعتبارسنج جدید با موفقیت اضافه شده است.
