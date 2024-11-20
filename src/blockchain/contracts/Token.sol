@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol"; // این خط برای اتصال به اوراکل Chainlink استفاده می‌شود
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol"; // برای اتصال به اوراکل Chainlink استفاده می‌شود
 
 contract Token is ERC20, Ownable {
     uint256 public transactionFeeRate = 1; // نرخ کارمزد اولیه
@@ -12,6 +12,9 @@ contract Token is ERC20, Ownable {
 
     mapping(address => uint256) public customFeeRates;
     mapping(address => address) public oracleAddresses;
+
+    event FeeRateUpdated(uint256 newFeeRate);
+    event OracleAddressUpdated(address tokenAddress, address oracleAddress);
 
     constructor(uint256 initialSupply, address _daoAddress) ERC20("Rayan Andish Token", "RATK") Ownable(msg.sender) {
         _mint(msg.sender, initialSupply);
@@ -28,12 +31,14 @@ contract Token is ERC20, Ownable {
     function setCustomFeeRate(address account, uint256 feeRate) external onlyDAO {
         require(feeRate <= 5, "Custom fee rate cannot exceed 5%");
         customFeeRates[account] = feeRate;
+        emit FeeRateUpdated(feeRate);
     }
 
     // تنظیم کارمزد کلی توسط DAO
     function setTransactionFeeRate(uint256 feeRate) external onlyDAO {
         require(feeRate <= 5, "Fee rate cannot exceed 5%");
         transactionFeeRate = feeRate;
+        emit FeeRateUpdated(feeRate);
     }
 
     // تنظیم آدرس دریافت‌کننده کارمزد توسط DAO
@@ -54,6 +59,7 @@ contract Token is ERC20, Ownable {
     // تنظیم آدرس اوراکل برای جفت توکن‌های مختلف
     function setOracleAddress(address tokenAddress, address oracleAddress) external onlyDAO {
         oracleAddresses[tokenAddress] = oracleAddress;
+        emit OracleAddressUpdated(tokenAddress, oracleAddress);
     }
 
     // دریافت نرخ تبدیل از اوراکل Chainlink

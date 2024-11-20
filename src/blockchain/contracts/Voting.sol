@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Voting is Ownable {
     struct Proposal {
@@ -16,13 +17,15 @@ contract Voting is Ownable {
     uint public proposalCount;
     mapping(uint => Proposal) public proposals;
     mapping(address => mapping(uint => bool)) public hasVoted;
-    mapping(uint => mapping(uint => uint)) public voteOptions; // گزینه‌های مختلف برای هر پروپوزال
 
     uint256 public votingFeeRate;
     address public feeCollector;
 
+    IERC20 public governanceToken;
+
     event ProposalCreated(uint indexed proposalId, string description, uint256 startTime, uint256 endTime);
-    event Voted(uint indexed proposalId, address voter, uint option);
+    event Voted(uint indexed proposalId, address voter, uint option, uint256 voterWeight);
+    event ProposalFinalized(uint indexed proposalId, uint winningOption);
 
     modifier onlyWithinTime(uint proposalId) {
         require(block.timestamp >= proposals[proposalId].startTime, "Voting has not started");
@@ -30,17 +33,20 @@ contract Voting is Ownable {
         _;
     }
 
-    constructor(uint256 _votingFeeRate, address _feeCollector, address initialOwner) Ownable(initialOwner) {
+    constructor(
+        uint256 _votingFeeRate,
+        address _feeCollector,
+        address _governanceToken
+    ) {
         votingFeeRate = _votingFeeRate;
         feeCollector = _feeCollector;
+        governanceToken = IERC20(_governanceToken);
     }
 
-    // تنظیم آدرس دریافت‌کننده کارمزد توسط مالک
     function setFeeCollector(address _feeCollector) external onlyOwner {
         feeCollector = _feeCollector;
     }
 
-    // تابع برای ایجاد پروپوزال جدید با زمان‌بندی و گزینه‌های مختلف
     function createProposal(
         string memory description,
         uint256 startTime,
@@ -48,59 +54,79 @@ contract Voting is Ownable {
         uint[] memory options
     ) external onlyOwner {
         require(startTime < endTime, "Invalid time range");
-        
+
         proposalCount++;
         Proposal storage newProposal = proposals[proposalCount];
         newProposal.id = proposalCount;
         newProposal.description = description;
         newProposal.startTime = startTime;
         newProposal.endTime = endTime;
-        newProposal.voteCounts = new uint[](options.length); // تعداد رأی‌های هر گزینه
+        newProposal.voteCounts = new uint[](options.length);
         newProposal.finalized = false;
 
         emit ProposalCreated(proposalCount, description, startTime, endTime);
     }
 
-    // رأی‌گیری برای یک پروپوزال با پرداخت کارمزد و انتخاب گزینه
     function vote(uint proposalId, uint option) external payable onlyWithinTime(proposalId) {
         Proposal storage proposal = proposals[proposalId];
-        require(!hasVoted[msg.sender][proposalId], "You have already voted on this proposal");
-        require(option < proposal.voteCounts.length, "Invalid voting option");
+        require(!hasVoted[msg.sender][proposalId], "Already voted");
+        require(option < proposal.voteCounts.length, "Invalid option");
 
         require(msg.value >= votingFeeRate, "Insufficient voting fee");
-        payable(feeCollector).transfer(msg.value); // انتقال کارمزد رأی به آدرس مشخص‌شده
+        payable(feeCollector).transfer(msg.value);
+
+        uint256 voterWeight = governanceToken.balanceOf(msg.sender);
+        require(voterWeight > 0, "No voting power");
 
         hasVoted[msg.sender][proposalId] = true;
-        proposal.voteCounts[option]++;
+        proposal.voteCounts[option] += voterWeight;
 
-        emit Voted(proposalId, msg.sender, option);
+        emit Voted(proposalId, msg.sender, option, voterWeight);
     }
 
-    // مشاهده نتیجه پروپوزال و تعداد آرای هر گزینه
-	function getProposal(uint proposalId) 
-	    public 
-	    view 
-	    returns (
-	        uint id, 
-	        string memory description, 
-	        uint startTime, 
-	        uint endTime, 
-	        uint[] memory voteCounts, 
-        	bool finalized
-	    ) 
-	{
-	    Proposal storage proposal = proposals[proposalId];
-	    return (
-	        proposal.id,
-	        proposal.description,
-	        proposal.startTime,
-	        proposal.endTime,
-	        proposal.voteCounts,
-	        proposal.finalized
-	    );
-	}
+    function finalizeProposal(uint proposalId) external onlyOwner {
+        Proposal storage proposal = proposals[proposalId];
+        require(!proposal.finalized, "Already finalized");
+        require(block.timestamp > proposal.endTime, "Voting still active");
 
-    // مشاهده وضعیت پروپوزال برای اطلاع از پایان یا ادامه‌ی رأی‌گیری
+        uint256 winningOption;
+        uint256 highestVotes;
+
+        for (uint i = 0; i < proposal.voteCounts.length; i++) {
+            if (proposal.voteCounts[i] > highestVotes) {
+                highestVotes = proposal.voteCounts[i];
+                winningOption = i;
+            }
+        }
+
+        proposal.finalized = true;
+
+        emit ProposalFinalized(proposalId, winningOption);
+    }
+
+    function getProposal(uint proposalId)
+        public
+        view
+        returns (
+            uint id,
+            string memory description,
+            uint startTime,
+            uint endTime,
+            uint[] memory voteCounts,
+            bool finalized
+        )
+    {
+        Proposal storage proposal = proposals[proposalId];
+        return (
+            proposal.id,
+            proposal.description,
+            proposal.startTime,
+            proposal.endTime,
+            proposal.voteCounts,
+            proposal.finalized
+        );
+    }
+
     function isVotingActive(uint proposalId) public view returns (bool) {
         Proposal storage proposal = proposals[proposalId];
         return block.timestamp >= proposal.startTime && block.timestamp <= proposal.endTime;
