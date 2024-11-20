@@ -91,12 +91,14 @@ source ~/.bashrc
 `/home/errick/DAO-VC/configtx.yaml`
 
 گواهی‌های Orderer:
+
 ` /home/errick/DAO-VC/crypto-config/ordererOrganizations/`
 
 ## 6. ایجاد Peer
 **راه‌اندازی Peer:**
 
 فایل تنظیمات Peer: 
+
 `/home/errick/DAO-VC/core.yaml`
 
 گواهی‌ها و کلیدهای مرتبط: 
