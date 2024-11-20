@@ -1,0 +1,87 @@
+# تنظیمات Peer برای سازمان VC1
+peer:
+  id: peer0.vc1.dao-vc.ir
+  networkId: dao-vc-network
+  listenAddress: 0.0.0.0:7051
+  chaincodeListenAddress: 0.0.0.0:7052
+  address: peer0.vc1.dao-vc.ir:7051
+  chaincodeAddress: peer0.vc1.dao-vc.ir:7052
+  tls:
+    enabled: true
+    cert:
+      file: /home/errick/DAO-VC/crypto-config/peerOrganizations/vc1.dao-vc.ir/peers/peer0.vc1.dao-vc.ir/tls/server.crt
+    key:
+      file: /home/errick/DAO-VC/crypto-config/peerOrganizations/vc1.dao-vc.ir/peers/peer0.vc1.dao-vc.ir/tls/server.key
+    rootcert:
+      file: /home/errick/DAO-VC/crypto-config/peerOrganizations/vc1.dao-vc.ir/peers/peer0.vc1.dao-vc.ir/tls/ca.crt
+
+msp:
+  mspConfigPath: /home/errick/DAO-VC/crypto-config/peerOrganizations/vc1.dao-vc.ir/peers/peer0.vc1.dao-vc.ir/msp
+
+# تنظیمات Orderer
+orderer:
+  address: orderer1.dao-vc.ir:7050
+  tls:
+    enabled: true
+    rootcert:
+      file: /home/errick/DAO-VC/crypto-config/ordererOrganizations/dao-vc.ir/orderers/orderer1.dao-vc.ir/tls/ca.crt
+
+# تنظیمات BCCSP
+bccsp:
+  default: SW
+  SW:
+    Hash: SHA2
+    Security: 256
+    FileKeyStore:
+      KeyStore: /home/errick/DAO-VC/crypto-config/peerOrganizations/vc1.dao-vc.ir/peers/peer0.vc1.dao-vc.ir/msp/keystore/key.pem
+# تنظیمات Chaincode
+chaincode:
+  golang:
+    runtime: golang:1.12-alpine
+  install:
+    timeout: 300s
+  start:
+    timeout: 300s
+
+# تنظیمات Logging
+logging:
+  level: info
+  format: "%{color}%{time:15:04:05.000} %{shortfile} %{shortfunc} -> %{level:.4s} %{id:03x} %{message}%{color:reset}"
+  peer:
+    level: debug
+  cauthdsl:
+    level: debug
+  gossip:
+    level: debug
+  ledger:
+    level: info
+  msp:
+    level: info
+  policies:
+    level: debug
+  grpc:
+    level: info
+
+# تنظیمات Gossip
+gossip:
+  bootstrap: peer0.vc1.dao-vc.ir:7051
+  useLeaderElection: true
+  orgLeader: false
+  endpoint: peer0.vc1.dao-vc.ir:7051
+
+# تنظیمات Metrics
+metrics:
+  provider: prometheus
+  statsd:
+    network: tcp
+    address: 127.0.0.1:8125
+    writeInterval: 10s
+    prefix: fabric
+
+# تنظیمات Other
+vm:
+  endpoint: unix:///var/run/docker.sock
+  docker:
+    tls:
+      enabled: false
+  networkMode: host
