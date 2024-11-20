@@ -51,53 +51,80 @@ source ~/.bashrc
 
 ## 1. آماده‌سازی پیش‌نیازها
 اطمینان حاصل کنید که ابزارهای Fabric (مانند cryptogen, configtxgen, و peer) نصب شده‌اند.
+
 تنظیم مسیر FABRIC_CFG_PATH به دایرکتوری پروژه:
+
 export FABRIC_CFG_PATH=/home/errick/DAO-VC
 
 ## 2. ایجاد کلیدها و گواهی‌ها
 اجرای ابزار cryptogen برای تولید کلیدها و گواهی‌های مورد نیاز:
+
 ./cryptogen generate --config=/home/errick/DAO-VC/crypto-config.yaml
-مسیر فایل‌ها: /home/errick/DAO-VC/crypto-config/
+
+مسیر فایل‌ها:
+
+ /home/errick/DAO-VC/crypto-config/
 
 ## 3. تولید فایل Genesis Block
 اجرای ابزار configtxgen برای ایجاد بلاک جنسیس:
+
 ./configtxgen -profile DAOGenesis -outputBlock /home/errick/DAO-VC/channel-artifacts/genesis.block -channelID DAOChannel -configPath /home/errick/DAO-VC
-مسیر فایل‌ها: /home/errick/DAO-VC/channel-artifacts/genesis.block
+
+مسیر فایل‌ها:
+
+ /home/errick/DAO-VC/channel-artifacts/genesis.block
 
 ## 4. ایجاد فایل تعریف کانال
 تولید فایل تراکنش کانال:
+
 ./configtxgen -profile DAOChannel -outputCreateChannelTx /home/errick/DAO-VC/channel-artifacts/channel.tx -channelID DAOChannel -configPath /home/errick/DAO-VC
-مسیر فایل‌ها: /home/errick/DAO-VC/channel-artifacts/channel.tx
+
+مسیر فایل‌ها:
+
+ /home/errick/DAO-VC/channel-artifacts/channel.tx
 
 ## 5. راه‌اندازی Orderer
 تنظیمات و راه‌اندازی Orderer با استفاده از فایل‌های موجود در:
+
 فایل تنظیمات Orderer: /home/errick/DAO-VC/configtx.yaml
+
 گواهی‌های Orderer: /home/errick/DAO-VC/crypto-config/ordererOrganizations/
 
 ## 6. ایجاد Peer
 راه‌اندازی Peer:
+
 فایل تنظیمات Peer: /home/errick/DAO-VC/core.yaml
+
 گواهی‌ها و کلیدهای مرتبط: /home/errick/DAO-VC/crypto-config/peerOrganizations/
 
 ## 7. ایجاد کانال
 اجرای دستور برای ایجاد کانال:
+
 ./peer channel create -o localhost:7050 -c DAOChannel -f /home/errick/DAO-VC/channel-artifacts/channel.tx --outputBlock /home/errick/DAO-VC/channel-artifacts/DAOChannel.block --tls --cafile /home/errick/DAO-VC/crypto-config/ordererOrganizations/dao-vc.ir/tlsca/tlsca.dao-vc.ir-cert.pem
-فایل‌های کانال: /home/errick/DAO-VC/channel-artifacts/DAOChannel.block
+
+فایل‌های کانال:
+
+ /home/errick/DAO-VC/channel-artifacts/DAOChannel.block
 
 ## 8. پیوستن Peerها به کانال
 اضافه کردن Peerها به کانال با دستور زیر:
+
 ./peer channel join -b /home/errick/DAO-VC/channel-artifacts/DAOChannel.block
 
 ## 9. نصب Chaincode
 نصب و تایید Chaincode برای اجرا بر روی شبکه:
+
 مسیر Chaincode: /home/errick/DAO-VC/chaincode/
 
 ## 10. تست شبکه
 اجرای تست‌ها و بررسی سلامت شبکه:
+
 تعامل با شبکه از طریق peer و بررسی عملکرد Orderer و Peerها.
+
 تایید تراکنش‌ها و کانال‌ها.
 
 ### فایل‌های اصلی و مسیرها
+
 | فایل/پوشه            | مسیر                                    |
 |----------------------|-----------------------------------------|
 | `crypto-config.yaml` | `/home/errick/DAO-VC/`                  |
