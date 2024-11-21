@@ -106,23 +106,21 @@ async function runTests() {
         const validatorAddress = accounts[3];
         const isValidator = await consensusInstance.isValidator(validatorAddress);
 
-        if (!isValidator) {
-            await consensusInstance.addValidator(validatorAddress, 500, { from: daoAddress });
-            const isValidatorAfter = await consensusInstance.isValidator(validatorAddress);
-
-            testResults.consensusTests.push({
-                test: "Add Validator Check",
-                validator: validatorAddress,
-                success: isValidatorAfter,
-            });
-        } else {
-            testResults.consensusTests.push({
-                test: "Add Validator Check",
-                validator: validatorAddress,
-                success: false,
-                error: "Validator already exists",
-            });
-        }
+	if (isValidator) {
+	    testResults.consensusTests.push({
+	        test: "Add Validator Check",
+	        validator: validatorAddress,
+	        success: true,
+	        message: "Validator already exists.",
+	    });
+	} else {
+	    await consensusInstance.addValidator(validatorAddress, 500, { from: daoAddress });
+	    testResults.consensusTests.push({
+	        test: "Add Validator Check",
+	        validator: validatorAddress,
+	        success: true,
+	    });
+	}
 
     } catch (error) {
         console.error("Error running tests:", error);

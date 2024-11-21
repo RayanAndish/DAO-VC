@@ -33,20 +33,15 @@ contract Voting is Ownable {
         _;
     }
 
-    constructor(
-        uint256 _votingFeeRate,
-        address _feeCollector,
-        address _governanceToken
-    ) {
+     // سازنده جدید
+    constructor(uint256 _votingFeeRate, address _feeCollector, address initialOwner) Ownable(initialOwner) {
         votingFeeRate = _votingFeeRate;
         feeCollector = _feeCollector;
-        governanceToken = IERC20(_governanceToken);
     }
 
     function setFeeCollector(address _feeCollector) external onlyOwner {
         feeCollector = _feeCollector;
     }
-
     function createProposal(
         string memory description,
         uint256 startTime,

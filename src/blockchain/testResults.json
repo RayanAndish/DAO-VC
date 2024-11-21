@@ -1,0 +1,43 @@
+{
+  "tokenTests": [
+    {
+      "test": "Initial Token Balance Check",
+      "address": "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1",
+      "result": "1000000",
+      "expected": "1000000",
+      "success": true
+    },
+    {
+      "test": "Token Transfer Check",
+      "from": "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1",
+      "to": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
+      "amount": 100,
+      "fee": 1,
+      "expectedBalance": "99",
+      "result": "99",
+      "success": true
+    }
+  ],
+  "votingTests": [
+    {
+      "test": "Proposal Creation and Details Check",
+      "proposalId": "1",
+      "description": "Test Proposal",
+      "startTime": "2024-11-21T12:07:21.000Z",
+      "endTime": "2024-11-21T13:06:21.000Z",
+      "voteCounts": [
+        "0",
+        "0"
+      ],
+      "finalized": false,
+      "success": true
+    }
+  ],
+  "consensusTests": [
+    {
+      "test": "Add Validator Check",
+      "validator": "0xE11BA2b4D45Eaed5996Cd0823791E0C93114882d",
+      "success": true
+    }
+  ]
+}
