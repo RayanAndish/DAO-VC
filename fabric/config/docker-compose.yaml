@@ -1,0 +1,195 @@
+version: '2.4'
+
+services:
+  orderer1.dao-vc.ir:
+    image: hyperledger/fabric-orderer:2.5
+    container_name: fabric-orderer1.dao-vc.ir
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/fabric/crypto/ordererOrganizations/dao-vc.ir/orderers/orderer1.dao-vc.ir/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/fabric/crypto/ordererOrganizations/dao-vc.ir/orderers/orderer1.dao-vc.ir/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=/etc/hyperledger/fabric/crypto/ordererOrganizations/dao-vc.ir/orderers/orderer1.dao-vc.ir/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+      - /home/errick/fabric/config/:/etc/hyperledger/fabric/config/
+      - /home/errick/fabric/crypto-config/:/etc/hyperledger/fabric/crypto/
+      - /home/errick/fabric/channel-artifacts/genesis.block:/etc/hyperledger/fabric/genesisblock
+    ports:
+      - "7150:7150"
+    networks:
+      - fabric_network
+
+  orderer2.dao-vc.ir:
+    image: hyperledger/fabric-orderer:2.5
+    container_name: fabric-orderer2.dao-vc.ir
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/fabric/crypto/ordererOrganizations/dao-vc.ir/orderers/orderer2.dao-vc.ir/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/fabric/crypto/ordererOrganizations/dao-vc.ir/orderers/orderer2.dao-vc.ir/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=/etc/hyperledger/fabric/crypto/ordererOrganizations/dao-vc.ir/orderers/orderer2.dao-vc.ir/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+      - /home/errick/fabric/config/:/etc/hyperledger/fabric/config/
+      - /home/errick/fabric/crypto-config/:/etc/hyperledger/fabric/crypto/
+      - /home/errick/fabric/channel-artifacts/genesis.block:/etc/hyperledger/fabric/genesisblock
+    ports:
+      - "7250:7250"
+    networks:
+      - fabric_network
+
+  orderer3.dao-vc.ir:
+    image: hyperledger/fabric-orderer:2.5
+    container_name: fabric-orderer3.dao-vc.ir
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/fabric/crypto/ordererOrganizations/dao-vc.ir/orderers/orderer3.dao-vc.ir/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/fabric/crypto/ordererOrganizations/dao-vc.ir/orderers/orderer3.dao-vc.ir/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=/etc/hyperledger/fabric/crypto/ordererOrganizations/dao-vc.ir/orderers/orderer3.dao-vc.ir/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+      - /home/errick/fabric/config/:/etc/hyperledger/fabric/config/
+      - /home/errick/fabric/crypto-config/:/etc/hyperledger/fabric/crypto/
+      - /home/errick/fabric/channel-artifacts/genesis.block:/etc/hyperledger/fabric/genesisblock
+    ports:
+      - "7350:7350"
+    networks:
+      - fabric_network
+
+  peer0.vc1.dao-vc.ir:
+    image: hyperledger/fabric-peer:2.5
+    container_name: fabric-peer0.vc1.dao-vc.ir
+    environment:
+      - CORE_PEER_ID=peer0.vc1.dao-vc.ir
+      - CORE_PEER_LOCALMSPID=OrgVC1MSP
+      - CORE_PEER_ADDRESS=peer0.vc1.dao-vc.ir:7052
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc1.dao-vc.ir/peers/peer0.vc1.dao-vc.ir/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc1.dao-vc.ir/peers/peer0.vc1.dao-vc.ir/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc1.dao-vc.ir/peers/peer0.vc1.dao-vc.ir/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /home/errick/fabric/config/:/etc/hyperledger/fabric/config/
+      - /home/errick/fabric/crypto-config/:/etc/hyperledger/fabric/crypto/
+    ports:
+      - "7052:7052"
+    networks:
+      - fabric_network
+
+  peer1.vc1.dao-vc.ir:
+    image: hyperledger/fabric-peer:2.5
+    container_name: fabric-peer1.vc1.dao-vc.ir
+    environment:
+      - CORE_PEER_ID=peer1.vc1.dao-vc.ir
+      - CORE_PEER_LOCALMSPID=OrgVC1MSP
+      - CORE_PEER_ADDRESS=peer1.vc1.dao-vc.ir:8052
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc1.dao-vc.ir/peers/peer1.vc1.dao-vc.ir/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc1.dao-vc.ir/peers/peer1.vc1.dao-vc.ir/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc1.dao-vc.ir/peers/peer1.vc1.dao-vc.ir/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /home/errick/fabric/config/:/etc/hyperledger/fabric/config/
+      - /home/errick/fabric/crypto-config/:/etc/hyperledger/fabric/crypto/
+    ports:
+      - "8052:8052"
+    networks:
+      - fabric_network
+
+  peer2.vc1.dao-vc.ir:
+    image: hyperledger/fabric-peer:2.5
+    container_name: fabric-peer2.vc1.dao-vc.ir
+    environment:
+      - CORE_PEER_ID=peer2.vc1.dao-vc.ir
+      - CORE_PEER_LOCALMSPID=OrgVC1MSP
+      - CORE_PEER_ADDRESS=peer2.vc1.dao-vc.ir:9052
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc1.dao-vc.ir/peers/peer2.vc1.dao-vc.ir/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc1.dao-vc.ir/peers/peer2.vc1.dao-vc.ir/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc1.dao-vc.ir/peers/peer2.vc1.dao-vc.ir/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /home/errick/fabric/config/:/etc/hyperledger/fabric/config/
+      - /home/errick/fabric/crypto-config/:/etc/hyperledger/fabric/crypto/
+    ports:
+      - "9052:9052"
+    networks:
+      - fabric_network
+
+  peer0.vc2.dao-vc.ir:
+    image: hyperledger/fabric-peer:2.5
+    container_name: fabric-peer0.vc2.dao-vc.ir
+    environment:
+      - CORE_PEER_ID=peer0.vc2.dao-vc.ir
+      - CORE_PEER_LOCALMSPID=OrgVC2MSP
+      - CORE_PEER_ADDRESS=peer0.vc2.dao-vc.ir:7053
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc2.dao-vc.ir/peers/peer0.vc2.dao-vc.ir/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc2.dao-vc.ir/peers/peer0.vc2.dao-vc.ir/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc2.dao-vc.ir/peers/peer0.vc2.dao-vc.ir/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /home/errick/fabric/config/:/etc/hyperledger/fabric/config/
+      - /home/errick/fabric/crypto-config/:/etc/hyperledger/fabric/crypto/
+    ports:
+      - "7053:7053"
+    networks:
+      - fabric_network
+
+  peer1.vc2.dao-vc.ir:
+    image: hyperledger/fabric-peer:2.5
+    container_name: fabric-peer1.vc2.dao-vc.ir
+    environment:
+      - CORE_PEER_ID=peer1.vc2.dao-vc.ir
+      - CORE_PEER_LOCALMSPID=OrgVC2MSP
+      - CORE_PEER_ADDRESS=peer1.vc2.dao-vc.ir:8053
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc2.dao-vc.ir/peers/peer1.vc2.dao-vc.ir/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc2.dao-vc.ir/peers/peer1.vc2.dao-vc.ir/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc2.dao-vc.ir/peers/peer1.vc2.dao-vc.ir/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /home/errick/fabric/config/:/etc/hyperledger/fabric/config/
+      - /home/errick/fabric/crypto-config/:/etc/hyperledger/fabric/crypto/
+    ports:
+      - "8053:8053"
+    networks:
+      - fabric_network
+
+  peer2.vc2.dao-vc.ir:
+    image: hyperledger/fabric-peer:2.5
+    container_name: fabric-peer2.vc2.dao-vc.ir
+    environment:
+      - CORE_PEER_ID=peer2.vc2.dao-vc.ir
+      - CORE_PEER_LOCALMSPID=OrgVC2MSP
+      - CORE_PEER_ADDRESS=peer2.vc2.dao-vc.ir:9053
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc2.dao-vc.ir/peers/peer2.vc2.dao-vc.ir/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc2.dao-vc.ir/peers/peer2.vc2.dao-vc.ir/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/crypto/peerOrganizations/vc2.dao-vc.ir/peers/peer2.vc2.dao-vc.ir/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /home/errick/fabric/config/:/etc/hyperledger/fabric/config/
+      - /home/errick/fabric/crypto-config/:/etc/hyperledger/fabric/crypto/
+    ports:
+      - "9053:9053"
+    networks:
+      - fabric_network
+
+networks:
+  fabric_network:
+    driver: bridge

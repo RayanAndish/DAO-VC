@@ -1,0 +1,202 @@
+Organizations:
+  - &OrdererOrg
+    Name: DAOOrdererOrg
+    ID: DAOOrdererMSP
+    MSPDir: /home/errick/fabric/crypto-config/ordererOrganizations/dao-vc.ir/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('DAOOrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('DAOOrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('DAOOrdererMSP.admin')"
+
+  - &OrgVC1
+    Name: OrgVC1
+    ID: OrgVC1MSP
+    MSPDir: /home/errick/fabric/crypto-config/peerOrganizations/vc1.dao-vc.ir/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrgVC1MSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrgVC1MSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrgVC1MSP.admin')"
+    AnchorPeers:
+      - Host: peer0.vc1.dao-vc.ir
+        Port: 7052
+      - Host: peer1.vc1.dao-vc.ir
+        Port: 8052
+      - Host: peer2.vc1.dao-vc.ir
+        Port: 9052
+
+  - &OrgVC2
+    Name: OrgVC2
+    ID: OrgVC2MSP
+    MSPDir: /home/errick/fabric/crypto-config/peerOrganizations/vc2.dao-vc.ir/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrgVC2MSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrgVC2MSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrgVC2MSP.admin')"
+    AnchorPeers:
+      - Host: peer0.vc2.dao-vc.ir
+        Port: 7053
+      - Host: peer1.vc2.dao-vc.ir
+        Port: 8053
+      - Host: peer2.vc2.dao-vc.ir
+        Port: 9053
+
+  - &OrgDAO
+    Name: OrgDAO
+    ID: OrgDAOMSP
+    MSPDir: /home/errick/fabric/crypto-config/peerOrganizations/dao.dao-vc.ir/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrgDAOMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrgDAOMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrgDAOMSP.admin')"
+    AnchorPeers:
+      - Host: peer0.dao.dao-vc.ir
+        Port: 9051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+    OrdererType: etcdraft
+    Addresses:
+        - orderer1.dao-vc.ir:7150
+        - orderer2.dao-vc.ir:7250
+        - orderer3.dao-vc.ir:7350
+    EtcdRaft:
+        Consenters:
+            - Host: orderer1.dao-vc.ir
+              Port: 7150
+              ClientTLSCert: /home/errick/fabric/crypto-config/ordererOrganizations/dao-vc.ir/orderers/orderer1.dao-vc.ir/tls/server.crt
+              ServerTLSCert: /home/errick/fabric/crypto-config/ordererOrganizations/dao-vc.ir/orderers/orderer1.dao-vc.ir/tls/server.crt
+            - Host: orderer2.dao-vc.ir
+              Port: 7250
+              ClientTLSCert: /home/errick/fabric/crypto-config/ordererOrganizations/dao-vc.ir/orderers/orderer2.dao-vc.ir/tls/server.crt
+              ServerTLSCert: /home/errick/fabric/crypto-config/ordererOrganizations/dao-vc.ir/orderers/orderer2.dao-vc.ir/tls/server.crt
+            - Host: orderer3.dao-vc.ir
+              Port: 7350
+              ClientTLSCert: /home/errick/fabric/crypto-config/ordererOrganizations/dao-vc.ir/orderers/orderer3.dao-vc.ir/tls/server.crt
+              ServerTLSCert: /home/errick/fabric/crypto-config/ordererOrganizations/dao-vc.ir/orderers/orderer3.dao-vc.ir/tls/server.crt
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation: # افزودن سیاست BlockValidation
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+    Capabilities:
+        <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ChannelCapabilities
+
+Profiles:
+  DAOGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+        <<: *OrdererDefaults
+        Organizations:
+            - *OrdererOrg
+    Consortiums:
+        DAOConsortium:
+            Organizations:
+                - *OrgVC1
+                - *OrgVC2
+                - *OrgDAO
+
+  DAOChannel:
+    Consortium: DAOConsortium
+    Application:
+        <<: *ApplicationDefaults
+        Organizations:
+            - *OrgVC1
+            - *OrgVC2
+            - *OrgDAO
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OrgVC1MSP.member', 'OrgVC2MSP.member', 'OrgDAOMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrgVC1MSP.member', 'OrgVC2MSP.member', 'OrgDAOMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrgVC1MSP.admin', 'OrgVC2MSP.admin', 'OrgDAOMSP.admin')"
+        Capabilities:
+            <<: *ApplicationCapabilities
+    Policies:
+        Readers:
+            Type: Signature
+            Rule: "OR('OrgVC1MSP.member', 'OrgVC2MSP.member', 'OrgDAOMSP.member')"
+        Writers:
+            Type: Signature
+            Rule: "OR('OrgVC1MSP.member', 'OrgVC2MSP.member', 'OrgDAOMSP.member')"
+        Admins:
+            Type: Signature
+            Rule: "OR('OrgVC1MSP.admin', 'OrgVC2MSP.admin', 'OrgDAOMSP.admin')"
+    Capabilities:
+        <<: *ChannelCapabilities
