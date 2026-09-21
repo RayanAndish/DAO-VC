@@ -1,0 +1,8 @@
+Total_Network_Nodes(N),Honest/Uncoop/Malicious_Mix,Pending_Txs(Mempool),Standard_Committee_Size,AIPoX_AI_Committee_Size,Standard_Msg_Complexity(O(n^2)),AIPoX_Msg_Complexity,AI_&_Network_Overhead_Penalty,Standard_IBFT_TPS,Proposed_AIPoX_TPS,TPS_Improvement(%)
+5,3/1/1,20000,5,3,25,9,22.5,1650.0,1783.0,8.1
+10,8/1/1,20000,10,8,100,64,45.0,1522.0,1712.0,12.5
+20,14/4/2,20000,20,14,400,196,90.0,1229.0,1604.0,30.5
+40,29/5/6,20000,40,21,1600,441,180.0,825.0,1465.0,77.5
+60,41/12/7,20000,60,23,3600,529,270.0,538.0,1346.0,150.4
+80,51/15/14,20000,80,24,6400,576,360.0,352.0,1250.0,254.5
+100,67/20/13,20000,100,25,10000,625,450.0,180.0,1185.0,557.6

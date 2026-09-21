@@ -1,0 +1,26 @@
+Global_Malicious_Nodes(%),Actual_Malicious_Count,AI_Quarantined_Nodes,AIPoX_Committee_Size,Escaped_Malicious_Nodes,Std_Effective_BFT_Risk(%),AIPoX_Effective_BFT_Risk(%),Standard_Network_Status,Standard_Throughput(%),AIPoX_Throughput(%)
+0.0,0,5,95,0,0.0,0.0,Active (Stable),101.2,99.7
+1.7,1,4,96,1,1.7,1.04,Active (Stable),101.2,102.5
+3.3,3,6,94,1,3.3,1.06,Active (Stable),97.7,98.5
+5.0,5,8,92,1,5.0,1.09,Active (Stable),100.1,99.9
+6.7,6,9,91,1,6.7,1.1,Active (Stable),92.0,98.8
+8.3,8,11,89,1,8.3,1.12,Active (Stable),88.2,96.1
+10.0,10,13,87,1,10.0,1.15,Active (Stable),85.2,92.6
+11.7,11,14,86,1,11.7,1.16,Active (Stable),74.7,94.6
+13.3,13,16,84,1,13.3,1.19,Active (Stable),70.1,95.7
+15.0,15,18,82,1,15.0,1.22,Active (Stable),63.1,91.6
+16.7,16,19,81,1,16.7,1.23,Active (Degraded),60.9,93.2
+18.3,18,21,79,1,18.3,1.27,Active (Degraded),48.5,90.1
+20.0,20,23,77,1,20.0,1.3,Active (Degraded),37.1,92.5
+21.7,21,22,78,2,21.7,2.56,Active (Degraded),24.9,92.3
+23.3,23,24,76,2,23.3,2.63,Active (Degraded),14.7,90.3
+25.0,25,26,74,2,25.0,2.7,Active (Degraded),2.3,93.8
+26.7,26,27,73,2,26.7,2.74,Active (Degraded),0.0,89.4
+28.3,28,29,71,2,28.3,2.82,Active (Degraded),0.0,86.2
+30.0,30,31,69,2,30.0,2.9,Active (Degraded),0.0,90.3
+31.7,31,32,68,2,31.7,2.94,Active (Degraded),0.0,87.6
+33.3,33,34,66,2,33.3,3.03,HALTED (Consensus Failed),0.3,84.5
+35.0,35,36,64,2,35.0,3.12,HALTED (Consensus Failed),0.9,82.6
+36.7,36,37,63,2,36.7,3.17,HALTED (Consensus Failed),2.9,82.3
+38.3,38,39,61,2,38.3,3.28,HALTED (Consensus Failed),1.9,82.5
+40.0,40,41,59,2,40.0,3.39,HALTED (Consensus Failed),0.5,84.6
