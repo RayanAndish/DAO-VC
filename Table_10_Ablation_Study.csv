@@ -1,0 +1,5 @@
+Architecture Variant,P-3 Allocation ($),P-2 Allocation ($),P-3 Rank,P-2 Rank,P-3 Net Gain
+1. Token-Only (Traditional dPoS),"$149,967.77","$308,249.79",5,1,Baseline
+2. Token + PoP (No AI Risk Gate),"$194,713.47","$250,411.77",3,1,+29.8%
+3. Token + AI Gate (No PoP),"$674,670.38","$92,128.50",1,2,+349.9%
+4. Full AIPoX (PoP + AI Gate),"$735,239.55","$62,818.13",1,4,+390.3%

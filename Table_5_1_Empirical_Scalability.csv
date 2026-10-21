@@ -1,0 +1,6 @@
+Workload_Transactions,Total_Execution_Time_s,Measured_TPS,Avg_Latency_ms,Avg_Gas_Per_Tx
+10,1.008,9.9,100.76,54294
+20,2.113,9.5,105.65,54294
+100,10.138,9.9,101.38,54294
+500,50.319,9.9,100.64,54294
+1000,100.512,9.9,100.51,54294
