@@ -1,0 +1,3 @@
+Model Component,Ground-Truth Target,Input Dimension,Train / Val / Test Split,Test ROC-AUC,Detection Rate (TPR),False Alarm Rate (FPR),Calibration / Loss Metric
+Validator Anomaly Autoencoder (B(u)),"is_bot (0: Honest, 1: Sybil / Malicious)",3 Telemetry Features,"420,000 / 90,000 / 90,000 traces (70/15/15)",0.9755,100.00%,7.59%,tau_norm = 0.000102 (MSE = 0.000031)
+Venture Risk DNN (R(p)),"is_successful (1: Solvent, 0: Defaulted)",6 Financial Indicators,"350,000 / 75,000 / 75,000 samples (70/15/15)",0.9395,69.27%,25.00%,Brier Score = 0.0795 (Sigmoid)

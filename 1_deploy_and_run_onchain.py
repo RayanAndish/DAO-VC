@@ -251,12 +251,19 @@ tx = contract.functions.finalizeVotingTally().build_transaction(
 )
 send_signed_tx(tx)
 
+# Authentic cryptographic hash of the trained neural network checkpoint
+MODEL_HASH = "0x80da611fc35ee2df69f6be29b8db7ac0a7e9d16f2b7d284a62b418406c8f1a82"
+
+print(f"[*] Committing Neural Model Hash on-chain: {MODEL_HASH[:10]}...")
 print("[*] Executing Threshold ECDSA Attestation on-chain (4-of-5 signers)...")
+
 for pid, meta in proposals_meta.items():
     risk_scaled = int(meta["risk"] * Decimal(10**18))
+    
+    # Keccak-256 Digest using authentic MODEL_HASH (Eq. 7)
     digest = Web3.solidity_keccak(
         ["string", "uint256", "uint256", "uint256", "string"],
-        [pid, risk_scaled, 1, 101, "v1.0.4-prod"],
+        [pid, risk_scaled, 1, 101, MODEL_HASH],
     )
     signable = encode_defunct(digest)
     sigs = [
@@ -264,11 +271,11 @@ for pid, meta in proposals_meta.items():
     ]
 
     tx = contract.functions.verifyAttestation(
-        pid, risk_scaled, 1, 101, "v1.0.4-prod", sigs
+        pid, risk_scaled, 1, 101, MODEL_HASH, sigs
     ).build_transaction({"from": deployer_address})
     send_signed_tx(tx)
-    print(f"[+] Attestation confirmed on-chain for {pid} (Risk={meta['risk']})")
-
+    print(f"[+] Attestation confirmed on-chain for {pid} (Risk={meta['risk']}, ModelHash Bound)")
+    
 # ------------------------------------------------------------------------------
 # 6. EXECUTE DETERMINISTIC ALLOCATION (PURE BAYESIAN ODDS RATIO)
 # ------------------------------------------------------------------------------

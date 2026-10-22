@@ -1,0 +1,6 @@
+Proposal_ID,tam,burn_rate,requested_amount,milestone_count,team_experience,prev_funding,Profile,P_Solvency,AI_Risk_Score_R_p,Bayesian_Odds_Ratio
+P-3,25000000,8000,350000,8,10,50000,"Sound Venture: Low Burn, High Experience, Proven Delivery",1.0,0.06,15.67
+P-1,16000000,18000,450000,5,6,20000,"Solid Engineering: Moderate TAM, Balanced Expenditure",1.0,0.35,1.86
+P-5,14000000,22000,550000,4,5,10000,"Moderate Venture: Mid-tier Delivery, Standard Burn",1.0,0.39,1.56
+P-4,11000000,28000,700000,3,3,5000,High Capital Ask: Weak Historical Milestones,1.0,0.46,1.17
+P-2,8000000,38000,950000,2,2,0,"Speculative Hype: High Burn, Aggressive Ask, Unproven Team",0.0,0.49,1.04
