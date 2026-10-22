@@ -1,12 +1,13 @@
 """
-1_train_models.py
-=================
-Stage 1: Model Training and Serialization.
-Trains Venture Risk DNN and Anomaly Detection Autoencoder on genuine datasets,
-saves serialized model artifacts to disk, and computes cryptographic ModelHash.
+Data/1_train_models.py
+======================
+Stage 1: Model Training, Serialization, and Cryptographic Hash Generation.
+Trains Venture Risk DNN (on financial_dataset.csv) and Anomaly Autoencoder (on user_behavior_dataset.csv).
+Saves serialized model artifacts and computes the on-chain ModelHash.
 """
 
 import hashlib
+import json
 import os
 import joblib
 import numpy as np
@@ -22,9 +23,7 @@ print("=" * 80)
 print("STAGE 1: TRAINING AND SERIALIZING OFF-CHAIN AI MODELS")
 print("=" * 80)
 
-# ------------------------------------------------------------------------------
-# 1. TRAIN VENTURE RISK DNN (R(p))
-# ------------------------------------------------------------------------------
+# 1. Train Venture Risk DNN
 print("\n[*] Loading financial_dataset.csv (500,000 records)...")
 df_fin = pd.read_csv("financial_dataset.csv")
 
@@ -39,7 +38,6 @@ feature_cols_risk = [
 X_risk = df_fin[feature_cols_risk].copy()
 y_risk = df_fin["is_successful"].values
 
-# 70% Train, 30% Temp (Val + Test)
 X_r_train, X_r_temp, y_r_train, y_r_temp = train_test_split(
     X_risk, y_risk, test_size=0.30, random_state=42, stratify=y_risk
 )
@@ -47,7 +45,6 @@ X_r_train, X_r_temp, y_r_train, y_r_temp = train_test_split(
 scaler_risk = StandardScaler()
 X_r_train_scaled = scaler_risk.fit_transform(X_r_train)
 
-# DNN Architecture: Input(6) -> Dense(32) -> Dense(16) -> Output(1)
 risk_dnn = MLPClassifier(
     hidden_layer_sizes=(32, 16),
     activation="relu",
@@ -64,15 +61,11 @@ print(
     f"[*] Training Venture Risk DNN on {len(X_r_train):,} training records..."
 )
 risk_dnn.fit(X_r_train_scaled, y_r_train)
-
-# Save Risk Model & Scaler
 risk_model_path = "models/venture_risk_dnn.joblib"
 joblib.dump(risk_dnn, risk_model_path)
 print(f"[+] Venture Risk DNN saved to: {risk_model_path}")
 
-# ------------------------------------------------------------------------------
-# 2. TRAIN ANOMALY AUTOENCODER (B(u))
-# ------------------------------------------------------------------------------
+# 2. Train Anomaly Autoencoder
 print("\n[*] Loading user_behavior_dataset.csv (600,000 records)...")
 df_user = pd.read_csv("user_behavior_dataset.csv")
 
@@ -86,8 +79,6 @@ X_u_train, X_u_temp, y_u_train, y_u_temp = train_test_split(
 
 scaler_user = StandardScaler()
 X_u_train_scaled = scaler_user.fit_transform(X_u_train)
-
-# Unsupervised Autoencoder: Trained strictly on honest nodes (is_bot == 0)
 honest_train_scaled = X_u_train_scaled[y_u_train == 0]
 
 autoencoder = MLPRegressor(
@@ -107,12 +98,11 @@ print(
     " traces..."
 )
 autoencoder.fit(honest_train_scaled, honest_train_scaled)
-
 autoencoder_path = "models/telemetry_autoencoder.joblib"
 joblib.dump(autoencoder, autoencoder_path)
 print(f"[+] Anomaly Autoencoder saved to: {autoencoder_path}")
 
-# Save Scalers for consistent downstream evaluation
+# Save scalers
 scalers = {
     "scaler_risk": scaler_risk,
     "scaler_user": scaler_user,
@@ -122,18 +112,17 @@ scalers = {
 joblib.dump(scalers, "models/scalers.joblib")
 print("[+] Feature scalers saved to: models/scalers.joblib")
 
-# ------------------------------------------------------------------------------
-# 3. COMPUTE ON-CHAIN CRYPTOGRAPHIC MODEL HASH (Eq. 7 & Section 6.3)
-# ------------------------------------------------------------------------------
+# 3. Compute Cryptographic Model Hash (SHA-256 Digest for on-chain binding)
 with open(risk_model_path, "rb") as f:
     model_bytes = f.read()
-model_hash = hashlib.sha256(model_bytes).hexdigest()
+model_hash = "0x" + hashlib.sha256(model_bytes).hexdigest()
+
+with open("models/model_hash.json", "w") as f:
+    json.dump({"model_hash": model_hash}, f, indent=4)
 
 print("\n" + "=" * 80)
-print(f">>> CRYPTOGRAPHIC MODEL HASH (SHA-256 / KECCAK PROVENANCE):")
-print(f"    Hash(Theta) = 0x{model_hash}")
+print(f">>> CRYPTOGRAPHIC MODEL HASH GENERATED: {model_hash}")
 print(
-    "    (This digest is committed on-chain via Eq. 7 to guarantee neural"
-    " integrity)"
+    "    (Exported to models/model_hash.json for automatic on-chain attestation)"
 )
 print("=" * 80)

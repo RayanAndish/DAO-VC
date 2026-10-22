@@ -1,24 +1,27 @@
+1_deploy_and_run_onchain.py:
+
 [+] Connected to Ganache RPC: http://172.16.22.120:8545
 [+] Active Deployer Address: 0x782282339c7c68DB709da39C8B02ae24c0256f36
-[+] Initial Balance: 100 ETH
+[+] Initial Balance: 99.85332161382657292 ETH
 [*] Installing solc 0.8.19 (evmVersion: paris)...
 [*] Deploying PoAValidatorEscrow...
-[+] PoAValidatorEscrow deployed at: 0xCD06f63ce873b8b15e8b26c7a66680791D5F5E2A
+[+] PoAValidatorEscrow deployed at: 0x25abBC2A3131b1D658f40dFC13149f0112b7D2a5
 [*] Deploying InvestmentSmartContract...
-[+] InvestmentSmartContract deployed at: 0x3b8199F41CF9715Aa8528815629B6e49E5402D7A
+[+] InvestmentSmartContract deployed at: 0xfe0aC9620352Ed4f550c6EF8FE800d51F773FcAA
 
 [*] Generating 1000 heterogeneous voter agents (Wealth & Behavioral Utility)...
 [*] Submitting 1000 real on-chain voting transactions to Ganache...
 [*] Progress: [==========] 100% Complete!
-[+] Confirmed 1000 on-chain votes in 98.19s (Throughput: 10.2 tx/s)
+[+] Confirmed 1000 on-chain votes in 116.67s (Throughput: 8.6 tx/s)
 
 [*] Finalizing On-Chain Voting Tally (Eq. 4b)...
+[*] Committing Neural Model Hash on-chain: 0x80da611f...
 [*] Executing Threshold ECDSA Attestation on-chain (4-of-5 signers)...
-[+] Attestation confirmed on-chain for P-3 (Risk=0.06)
-[+] Attestation confirmed on-chain for P-2 (Risk=0.49)
-[+] Attestation confirmed on-chain for P-5 (Risk=0.39)
-[+] Attestation confirmed on-chain for P-4 (Risk=0.46)
-[+] Attestation confirmed on-chain for P-1 (Risk=0.35)
+[+] Attestation confirmed on-chain for P-3 (Risk=0.06, ModelHash Bound)
+[+] Attestation confirmed on-chain for P-2 (Risk=0.49, ModelHash Bound)
+[+] Attestation confirmed on-chain for P-5 (Risk=0.39, ModelHash Bound)
+[+] Attestation confirmed on-chain for P-4 (Risk=0.46, ModelHash Bound)
+[+] Attestation confirmed on-chain for P-1 (Risk=0.35, ModelHash Bound)
 
 [*] Triggering Pure Bayesian Odds Treasury Allocation (Eq. 8)...
 
@@ -35,6 +38,8 @@ Proposal_ID  Traditional_Allocation_USD  AIPoX_Allocation_USD Net_Allocation_Del
 
 [*] Measuring Scalability Workloads on Ganache...
 [+] Benchmarking completed and saved to Table_5_1_Empirical_Scalability.csv
+
+2_generate_verified_tables.py:
 
 ================================================================================
 >>> ALL VERIFIED ON-CHAIN TABLES REPRODUCED:
@@ -64,6 +69,8 @@ Proposal ID  Traditional Allocation (USD)  AIPoX Allocation (USD) Net Allocation
    4. Full AIPoX (PoP + AI Gate)        $735,239.55         $62,818.13         1         4      +390.3%
 
 [+] Success: All tables derived directly from on-chain execution.
+
+3_plot_publication_figures.py:
 
 [+] Saved: Figure_4_Treasury_Reallocation.png
 [+] Saved: Figure_5_Ablation_Decomposition.png

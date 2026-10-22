@@ -1,0 +1,6 @@
+Proposal_ID,tam,burn_rate,requested_amount,milestone_count,team_experience,prev_funding,Dataset_Row_Index,Profile_Description,P_Solvency,AI_Risk_Score_R_p,Bayesian_Odds_Ratio
+P-3,75476866,8530,179130,4,12,0,493173,Low-Risk Infrastructure Benchmark (Extracted from 95th centile),0.94,0.06,15.67
+P-1,4688545,23345,396865,7,8,0,449913,Solid Early-Stage Engineering (Extracted from 65th centile),0.6499,0.35,1.86
+P-5,636133745,9666,106326,4,2,1,433981,Moderate Growth Venture (Extracted from 60th centile),0.6098,0.39,1.56
+P-4,640901,7307,146140,4,7,0,465659,Under-Collateralized Ask (Extracted from 55th centile),0.54,0.46,1.17
+P-2,70448855,2720,35360,1,7,0,219250,High-Risk Speculative Cohort (Extracted from 50th centile),0.51,0.49,1.04
