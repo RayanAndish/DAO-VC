@@ -1,4 +1,3 @@
-```markdown
 # AIPoX: A Hybrid Consensus and Governance Framework for Secure and Meritocratic Capital Allocation in Venture DAOs
 
 [![Solidity](https://img.shields.io/badge/Solidity-^0.8.19-363636?logo=solidity)](https://soliditylang.org/)
