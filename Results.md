@@ -171,4 +171,3 @@ Proposal ID  Traditional Allocation (USD)  AIPoX Allocation (USD) Net Allocation
 [+] Saved: Figure_5_Ablation_Decomposition.png
 [+] Saved: Figure_6_Empirical_Blockchain_Scalability.png
 ```
-```
