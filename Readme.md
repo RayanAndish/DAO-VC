@@ -313,10 +313,3 @@ If you utilize this codebase, datasets, or architectural formulations in your re
 
 For technical questions regarding reproduction or smart contract verification, please submit an issue on the official GitHub repository.
 ```
-
----
-
-### نتیجه:
-1. مشکل خطای کامپایلر Mermaid در گیت‌هاب برای همیشه حل شد و تصاویر به صورت **وکتورهای بی‌نقص SVG** لود می‌شوند.
-2. هیچ دکمه یا کد اضافی در نمایش ریپازیتوری وجود نخواهد داشت.
-3. تمامی فرمول‌های ریاضی درون بلاک‌های استاندارد MathJax قرار گرفتند و در پیش‌نمایش گیت‌هاب با بالاترین کیفیت ریاضی رندر می‌شوند.
