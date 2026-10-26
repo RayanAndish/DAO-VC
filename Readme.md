@@ -36,144 +36,23 @@ The protocol is partitioned across four operational layers:
 ## 2. System Architecture & Diagrams
 
 ### Figure 1 | End-to-End Operational Architecture and Data Flow
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '13px', 'fontFamily': 'Arial'}}}%%
-flowchart TD
-    classDef inp fill:#fce4ec,stroke:#880e4f,stroke-width:2px,color:#000;
-    classDef ai fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#000;
-    classDef l2 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000;
-    classDef sc fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#000;
-
-    subgraph Inputs ["1. System Inputs & Escrow Collateral"]
-        IN_Z["Node Telemetry Vector (z_u in R^3)<br/>(Txs, Gas, Native Balance)"]:::inp
-        IN_X["Venture Feature Vector (X_p in R^6)<br/>(TAM, Burn, Milestones, Team)"]:::inp
-        IN_GOV["Participant Tokens (T_u) & Logs (P_u)"]:::inp
-        IN_B["Validator Bonded Stake (B_i >= B_min)"]:::inp
-    end
-
-    subgraph Processing ["2. Parallel Off-Chain AI & On-Chain Governance"]
-        subgraph Col_AI ["Off-Chain AI Meta-Layer"]
-            AE["Telemetry Autoencoder B(u)<br/>Loss: ||z_u - z_hat_u||^2 / tau_norm (AUC=0.992)"]:::ai
-            DNN["Venture Risk DNN R(p)<br/>Default Prob: 1 - P(Solvency) (AUC=0.940)"]:::ai
-            ATTEST["Threshold Attestation (k-of-M ECDSA)<br/>Digest Gamma_p with ModelHash & Nonce"]:::ai
-        end
-
-        subgraph Col_L2 ["Layer 2 Deterministic Governance"]
-            POP["Proof of Participation (Eq. 3)<br/>P_score = W_v*V + W_c*C + W_a*A"]:::l2
-            WEIGHT["Convex Voting Power (Eq. 4)<br/>w_u = alpha*T_bar + beta*P_bar (beta > alpha)"]:::l2
-            POA["Modified PoA Validator Layer (Eq. 2)<br/>W_PoA = W_A*A_i - delta*B(u)"]:::l2
-        end
-    end
-
-    subgraph Settlement ["3. On-Chain Finality & Smart Contract Settlement"]
-        QUORUM["AIPoX Governance Quorum Check<br/>V_share(p) >= theta (Token Score: V(p))"]:::sc
-        ALLOC["Macro Treasury Allocation (Eq. 8)<br/>A_target(p) proportional to V(p) * [(1 - R(p)) / R(p)]"]:::sc
-        TRANCHE["Milestone Tranche Disbursement (Eq. 9)<br/>I(p,t) = A_target(p) * mu_t * S(p,t)"]:::sc
-        SLASH["PoA Security Enforcement (Eq. 11)<br/>If B(u) > 0.65 -> Eject & Slash Bonded Stake B_i"]:::sc
-    end
-
-    IN_Z --> AE
-    IN_X --> DNN
-    AE --> ATTEST
-    DNN --> ATTEST
-
-    IN_GOV --> POP
-    POP --> WEIGHT
-    IN_B --> POA
-
-    ATTEST -->|Verified Anomaly B(u)| POA
-    ATTEST -->|Attested Risk R(p)| ALLOC
-
-    WEIGHT --> QUORUM
-    POA --> QUORUM
-    QUORUM --> ALLOC
-    ALLOC --> TRANCHE
-    POA --> SLASH
-
-    TRANCHE -.->|Telemetry Feedback Loop| IN_Z
-    SLASH -.->|Escrow State Update| IN_B
-```
+<p align="center">
+  <img src="figures/Figure_1_Operational_Architecture.svg" width="100%" alt="Figure 1: AIPoX Operational Architecture">
+</p>
 
 ---
 
 ### Figure 3 | Dual-Stream AI Meta-Layer & Inference Pipeline
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '13px', 'fontFamily': 'Arial'}}}%%
-flowchart TD
-    classDef s1 fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000;
-    classDef s2 fill:#e0f2f1,stroke:#004d40,stroke-width:2px,color:#000;
-    classDef s3 fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000;
-    classDef s4 fill:#ede7f6,stroke:#311b92,stroke-width:2px,color:#000;
-
-    subgraph S1 ["1. Telemetry Ingestion & Feature Extraction"]
-        T_NODE["Node Operational Telemetry (z_u in R^3)<br/>(Txs, Native Balance, Gas Used)"]:::s1
-        T_PROP["Venture Attributes (X_p in R^6)<br/>(TAM, Burn, Ask, Milestones, Experience)"]:::s1
-    end
-
-    subgraph S2 ["2. Pre-Inference Defense & Provenance Trimming"]
-        IQR["Statistical IQR Filter (Eq. 15)<br/>|z_u - median(z_u)| <= 1.5 * IQR(z_u)"]:::s2
-        PROV["On-Chain Provenance Verification<br/>Immutable Storage Check for Features"]:::s2
-    end
-
-    T_NODE --> IQR
-    T_PROP --> PROV
-
-    subgraph S3 ["3. Dual-Stream Off-Chain Neural Inference"]
-        AE["Unsupervised Autoencoder (3->16->4->16->3)<br/>Anomaly Score: B(u) in [0, 1]<br/>(Held-out Test ROC-AUC = 0.992)"]:::s3
-        DNN["Venture Risk DNN (6->32->16->1)<br/>Default Risk: R(p) in (0, 1)<br/>(Held-out Test ROC-AUC = 0.940)"]:::s3
-    end
-
-    IQR --> AE
-    PROV --> DNN
-
-    subgraph S4 ["4. Cryptographic Threshold Attestation"]
-        ATTEST["(k-of-M) Threshold Attestation Digest (Eq. 7)<br/>Gamma_p = Keccak(ProposalID || R(p) || Epoch || Nonce || ModelHash)"]:::s2
-    end
-
-    AE --> ATTEST
-    DNN --> ATTEST
-
-    subgraph S5 ["5. Deterministic On-Chain Enforcement"]
-        SLASH["PoA Slashing & Quarantine (Eq. 11)<br/>If B(u) > 0.65 -> Eject & Slash B_i"]:::s4
-        GATE["Bayesian Odds Allocation (Eq. 8 & 9)<br/>A_target(p) proportional to V(p) * [(1 - R(p)) / R(p)]<br/>Milestone Release: I(p,t) = A_target * mu_t * S(p,t)"]:::s4
-    end
-
-    ATTEST -->|Verified B(u)| SLASH
-    ATTEST -->|Attested R(p)| GATE
-```
+<p align="center">
+  <img src="figures/Figure_3_AI_Dual_Stream_Pipeline.svg" width="100%" alt="Figure 3: AI Inference Pipeline">
+</p>
 
 ---
 
 ### Figure 4 | Closed-Loop Five-Phase Governance Lifecycle
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '13px', 'fontFamily': 'Arial'}}}%%
-flowchart TD
-    classDef leftCol fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#000;
-    classDef rightCol fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000;
-    classDef att fill:#fff8e1,stroke:#f57f17,stroke-width:2px,stroke-dasharray: 4 4,color:#000;
-    classDef sc fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#000;
-
-    subgraph Preparation ["Phase 1 & 2: Initiation & Off-Chain Intelligence"]
-        P1["<b>Phase 1: Proposal Registration</b><br/>Submit Capital Ask & Features X_p<br/>Commit On-Chain Keccak-256 Hash"]:::leftCol
-        P2["<b>Phase 2: Off-Chain AI Inference</b><br/>Compute Risk R(p) via Venture DNN<br/>Compute Anomaly B(u) via Autoencoder"]:::leftCol
-        ORACLE["<b>Threshold Attestation Layer</b><br/>(k-of-M) ECDSA Committee Signatures<br/>Commit Authentic ModelHash (Eq. 7)"]:::att
-        P1 --> P2 --> ORACLE
-    end
-
-    subgraph Execution ["Phase 3 to 5: On-Chain Governance & Settlement"]
-        P3["<b>Phase 3: Meritocratic Voting</b><br/>Dual Power: w_u = alpha*T_bar + beta*P_bar<br/>Quorum Gate: V_share(p) >= theta"]:::rightCol
-        P4["<b>Phase 4: PoA Block Finality</b><br/>Validator Sequencing & Block Order<br/>Slashing Escrow B_i if B(u) > 0.65"]:::rightCol
-        P5["<b>Phase 5: Smart Contract Execution</b><br/>Macro Allocation: A_target(p) via Bayesian Odds (Eq. 8)<br/>Tranche Release: I(p,t) proportional to S(p,t) (Eq. 9)"]:::sc
-        STREAM["<b>State Telemetry Stream</b><br/>Milestone Deliverables S(p,t)<br/>Validator Behavior Traces"]:::sc
-        P3 --> P4 --> P5 --> STREAM
-    end
-
-    ORACLE -->|Attested Digest Ready| P3
-    STREAM -.->|Closed-Loop AI Calibration & Training Data Update| P1
-```
+<p align="center">
+  <img src="figures/Figure_4_Governance_Lifecycle.svg" width="100%" alt="Figure 4: Governance Lifecycle">
+</p>
 
 ---
 
@@ -275,6 +154,11 @@ DAO-VC-AIPoX/
 ├── Contracts/
 │   ├── InvestmentSmartContract.sol # Main voting, attestation, Bayesian allocation, tranche gating
 │   └── PoAValidatorEscrow.sol      # Validator bonded collateral deposit and anomaly slashing
+│
+├── figures/
+│   ├── Figure_1_Operational_Architecture.svg # Layered architectural data flow
+│   ├── Figure_3_AI_Dual_Stream_Pipeline.svg  # Dual-stream AI gating pipeline
+│   └── Figure_4_Governance_Lifecycle.svg     # Closed-loop 5-phase governance workflow
 │
 └── Data/
     ├── 1_train_models.py           # Trains DNN and Autoencoder on 500k/600k datasets; generates ModelHash
@@ -431,3 +315,8 @@ For technical questions regarding reproduction or smart contract verification, p
 ```
 
 ---
+
+### نتیجه:
+1. مشکل خطای کامپایلر Mermaid در گیت‌هاب برای همیشه حل شد و تصاویر به صورت **وکتورهای بی‌نقص SVG** لود می‌شوند.
+2. هیچ دکمه یا کد اضافی در نمایش ریپازیتوری وجود نخواهد داشت.
+3. تمامی فرمول‌های ریاضی درون بلاک‌های استاندارد MathJax قرار گرفتند و در پیش‌نمایش گیت‌هاب با بالاترین کیفیت ریاضی رندر می‌شوند.
