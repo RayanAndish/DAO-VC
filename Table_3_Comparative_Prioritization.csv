@@ -1,6 +1,6 @@
-Proposal ID,Raw Token Votes (dPoS),PoP-Adjusted Score V(p),AI Risk Score R(p),Traditional Rank,PoP Rank,AIPoX Rank
-P-3,1951159,2469242,0.06,4,4,1
-P-5,3237131,2664379,0.39,1,3,2
-P-1,1596341,1960994,0.35,5,5,3
-P-4,2774094,2670108,0.46,3,2,4
-P-2,2891230,2685228,0.49,2,1,5
+Proposal ID,Raw Token Votes (dPoS),PoP-Adjusted Score V(p),AI Risk Score R(p),Traditional Rank,PoP Rank,Final AIPoX Rank
+P-3,2983703,3087958,0.02,1,1,1
+P-1,1841227,2005300,0.3696,4,4,2
+P-5,1836145,2041694,0.3871,5,2,3
+P-4,2218115,2003742,0.4548,3,5,4
+P-2,2281328,2021820,0.5378,2,3,5
