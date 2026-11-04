@@ -1,3 +1,11 @@
 {
-    "model_hash": "0x9135e5c2c013fc78339abfd3b0993ea64eef5fd92cbe31d3de3864a0039d1e1c"
+    "model_hash": "0xee572bc6e502b835d5e3e4ddb5d7e991ca725d026b57dc5c11f8249113ddeb5b",
+    "algorithm": "sha256",
+    "covers": [
+        "risk weights",
+        "autoencoder weights",
+        "scalers",
+        "feature schema",
+        "architecture"
+    ]
 }

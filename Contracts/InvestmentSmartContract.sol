@@ -2,36 +2,36 @@
 pragma solidity ^0.8.19;
 
 /**
- * @title InvestmentSmartContract
- * @dev Secure Threshold ECDSA Attestation, On-Chain Voter Registry, 
- *      4-Way On-Chain Ablation, and 40% Capped Bayesian Allocation
+ * @title InvestmentSmartContract (revised)
+ * @notice One deployment = one voting epoch.
+ *         Phase machine: Idle -> Voting -> Finalized -> Allocated (one-way).
+ *         Fixes: C1 (one vote per voter per epoch), C2 (PoP bounded to 10000 bps),
+ *         C3 (risk bounded to [0.02, 0.98]), C4/C4b (digest bound to address, chainid,
+ *         epoch and model hash; epoch must equal votingEpoch), C5 (phase machine),
+ *         C6 (unallocated residue recorded), C7 (sequenced, cumulative-capped tranches).
  */
 contract InvestmentSmartContract {
     uint256 public constant SCALE = 1e18;
-    uint256 public constant TREASURY_POOL = 1_000_000 * 1e18; // $1,000,000 USD
-    uint256 public constant ALPHA_BPS = 4000; // 0.40 Capital Weight
-    uint256 public constant BETA_BPS = 6000;  // 0.60 Participation Weight
+    uint256 public constant TREASURY_POOL = 1_000_000 * 1e18;   // $1,000,000
+    uint256 public constant ALPHA_BPS = 4000;                    // 0.40 capital weight
+    uint256 public constant BETA_BPS = 6000;                     // 0.60 participation weight
+    uint256 public constant MAX_CAP_BPS = 4000;                  // 40% per-proposal cap
+    uint256 public constant MAX_PROPOSAL_ALLOCATION = (TREASURY_POOL * MAX_CAP_BPS) / 10000;
+    uint256 public constant MIN_RISK = 2e16;                     // R(p) >= 0.02
+    uint256 public constant MAX_RISK = 98e16;                    // R(p) <= 0.98
+    uint256 public constant MAX_PARTICIPATION_BPS = 10000;
+    // secp256k1 n / 2 (EIP-2): rejects malleable high-s signatures
+    uint256 public constant SECP256K1N_HALF =
+        0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0;
 
-    // Institutional VC Portfolio Diversification Cap: 40% Max Exposure per Proposal
-    uint256 public constant MAX_CAP_BPS = 4000; // 40.00%
-    uint256 public constant MAX_PROPOSAL_ALLOCATION = (TREASURY_POOL * MAX_CAP_BPS) / 10000; // $400,000 USD
-
-    address public admin;
-    uint256 public votingEpoch;
-    uint256 public totalActiveTokens;
-    uint256 public totalParticipationScoreSum;
-    uint256 public totalVotesCastCount;
-
-    bool public votingOpen;
-    uint256 public maxBlockDrift = 5000;
-    bytes32 public approvedModelHash;
+    enum Phase { Idle, Voting, Finalized, Allocated }
 
     struct Proposal {
         string proposalId;
         uint256 rawTokenVotes;
         uint256 rawParticipationSum;
-        uint256 compositeWeight; // V(p)
-        uint256 riskScore;      // R(p) scaled 1e18
+        uint256 compositeWeight;   // V(p)
+        uint256 riskScore;         // R(p), scaled 1e18
         bool isAttested;
         uint256 targetAllocationUSD;
         uint256 totalReleasedUSD;
@@ -40,16 +40,28 @@ contract InvestmentSmartContract {
 
     struct VoterProfile {
         uint256 tokenBalance;
-        uint256 participationScore;
+        uint256 participationScore; // P in basis points (0..10000)
         bool isRegistered;
     }
+
+    address public immutable admin;
+    Phase public phase;
+    uint256 public votingEpoch;
+    uint256 public totalActiveTokens;
+    uint256 public totalParticipationScoreSum;
+    uint256 public totalVotesCastCount;
+    uint256 public maxBlockDrift = 5000;
+    bytes32 public approvedModelHash;
+    uint256 public unallocatedTreasury;   // C6: residue after water-filling (USD wei)
 
     mapping(string => Proposal) public proposals;
     string[] public proposalRegistry;
 
     mapping(address => VoterProfile) public voterRegistry;
-    mapping(string => mapping(address => bool)) public hasVoted;
+    mapping(uint256 => mapping(address => bool)) public hasVoted;   // C1: keyed by epoch, one vote total
     mapping(string => uint256) public lastVerifiedNonce;
+    mapping(string => uint256) public lastTrancheIndex;             // C7
+    mapping(string => uint256) public cumulativeMuBps;              // C7
 
     mapping(address => bool) public isTelemetrySigner;
     uint256 public signerCount;
@@ -67,41 +79,42 @@ contract InvestmentSmartContract {
         _;
     }
 
+    modifier inPhase(Phase p) {
+        require(phase == p, "Invalid phase");
+        _;
+    }
+
     constructor(address[] memory _signers, uint256 _threshold, bytes32 _initialModelHash) {
+        require(_threshold > 0 && _threshold <= _signers.length, "Bad threshold");
         admin = msg.sender;
         signerCount = _signers.length;
         requiredThreshold = _threshold;
         approvedModelHash = _initialModelHash;
-
         for (uint256 i = 0; i < _signers.length; i++) {
+            require(_signers[i] != address(0), "Zero signer");
             isTelemetrySigner[_signers[i]] = true;
         }
     }
 
-    function setVotingState(bool _isOpen) external onlyAdmin {
-        votingOpen = _isOpen;
-    }
-
-    function registerProposal(string memory pid) external onlyAdmin {
-        if (!proposals[pid].exists) {
-            proposals[pid].proposalId = pid;
-            proposals[pid].exists = true;
-            proposalRegistry.push(pid);
-        }
-    }
-
-    function initVotingEpoch(uint256 _epoch) external onlyAdmin {
-        votingEpoch = _epoch;
-        votingOpen = true;
+    // ------------------------------------------------------------------
+    // Registration (Idle only)
+    // ------------------------------------------------------------------
+    function registerProposal(string memory pid) external onlyAdmin inPhase(Phase.Idle) {
+        require(!proposals[pid].exists, "Already registered");
+        proposals[pid].proposalId = pid;
+        proposals[pid].exists = true;
+        proposalRegistry.push(pid);
     }
 
     function registerVoterProfiles(
         address[] calldata voters,
         uint256[] calldata tokens,
         uint256[] calldata pScores
-    ) external onlyAdmin {
+    ) external onlyAdmin inPhase(Phase.Idle) {
         require(voters.length == tokens.length && tokens.length == pScores.length, "Array mismatch");
         for (uint256 i = 0; i < voters.length; i++) {
+            require(tokens[i] > 0, "Zero tokens");
+            require(pScores[i] <= MAX_PARTICIPATION_BPS, "PoP out of range");
             voterRegistry[voters[i]] = VoterProfile({
                 tokenBalance: tokens[i],
                 participationScore: pScores[i],
@@ -111,20 +124,26 @@ contract InvestmentSmartContract {
         }
     }
 
-    function castVote(string memory pid) external {
-        require(votingOpen, "Voting window closed");
+    // ------------------------------------------------------------------
+    // Voting lifecycle
+    // ------------------------------------------------------------------
+    function initVotingEpoch(uint256 _epoch) external onlyAdmin inPhase(Phase.Idle) {
+        votingEpoch = _epoch;
+        phase = Phase.Voting;
+    }
+
+    function castVote(string memory pid) external inPhase(Phase.Voting) {
         require(proposals[pid].exists, "Proposal not registered");
-        require(voterRegistry[msg.sender].isRegistered, "Caller not registered");
-        require(!hasVoted[pid][msg.sender], "Double voting prohibited");
+        VoterProfile storage vp = voterRegistry[msg.sender];
+        require(vp.isRegistered, "Caller not registered");
+        require(!hasVoted[votingEpoch][msg.sender], "One vote per voter per epoch");
+        hasVoted[votingEpoch][msg.sender] = true;
 
-        hasVoted[pid][msg.sender] = true;
-
-        uint256 tokens = voterRegistry[msg.sender].tokenBalance;
-        uint256 pScore = voterRegistry[msg.sender].participationScore;
+        uint256 tokens = vp.tokenBalance;
+        uint256 pScore = vp.participationScore;
 
         proposals[pid].rawTokenVotes += tokens;
         proposals[pid].rawParticipationSum += pScore;
-
         totalActiveTokens += tokens;
         totalParticipationScoreSum += pScore;
         totalVotesCastCount++;
@@ -132,22 +151,22 @@ contract InvestmentSmartContract {
         emit VoteCast(msg.sender, pid, tokens, pScore, totalVotesCastCount);
     }
 
-    function finalizeVotingTally() external onlyAdmin {
+    function finalizeVotingTally() external onlyAdmin inPhase(Phase.Voting) {
         require(totalActiveTokens > 0 && totalParticipationScoreSum > 0, "No votes cast");
-        votingOpen = false;
+        phase = Phase.Finalized;
 
         for (uint256 i = 0; i < proposalRegistry.length; i++) {
-            string memory pid = proposalRegistry[i];
-            uint256 tokens = proposals[pid].rawTokenVotes;
-            uint256 pScoreSum = proposals[pid].rawParticipationSum;
-
-            uint256 tokenPart = (ALPHA_BPS * tokens) / 10000;
-            uint256 popPart = (BETA_BPS * totalActiveTokens * pScoreSum) / (10000 * totalParticipationScoreSum);
-
-            proposals[pid].compositeWeight = tokenPart + popPart;
+            Proposal storage p = proposals[proposalRegistry[i]];
+            uint256 tokenPart = (ALPHA_BPS * p.rawTokenVotes) / 10000;
+            uint256 popPart = (BETA_BPS * totalActiveTokens * p.rawParticipationSum)
+                / (10000 * totalParticipationScoreSum);
+            p.compositeWeight = tokenPart + popPart;
         }
     }
 
+    // ------------------------------------------------------------------
+    // Attestation (Finalized only)
+    // ------------------------------------------------------------------
     function verifyAttestation(
         string memory pid,
         uint256 riskScore,
@@ -155,42 +174,40 @@ contract InvestmentSmartContract {
         uint256 nonce,
         bytes32 modelHash,
         bytes[] memory signatures
-    ) public {
-        require(proposals[pid].exists, "Proposal not registered");
-        require(signatures.length >= requiredThreshold, "Insufficient signatures");
-        require(nonce > lastVerifiedNonce[pid], "Stale nonce");
+    ) public inPhase(Phase.Finalized) {
+        Proposal storage p = proposals[pid];
+        require(p.exists, "Proposal not registered");
+        require(epoch == votingEpoch, "Epoch mismatch");
         require(block.number >= epoch && block.number - epoch <= maxBlockDrift, "Attestation expired");
+        require(nonce > lastVerifiedNonce[pid], "Stale nonce");
+        require(riskScore >= MIN_RISK && riskScore <= MAX_RISK, "Risk out of bounds");
         require(modelHash == approvedModelHash, "Model hash mismatch");
+        require(signatures.length >= requiredThreshold, "Insufficient signatures");
 
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(pid, riskScore, epoch, nonce, modelHash)
+        // Digest order matches the Python deploy script exactly:
+        // (contract, chainId, pid, epoch, nonce, modelHash, riskScore)
+        bytes32 digest = keccak256(
+            abi.encodePacked(address(this), block.chainid, pid, epoch, nonce, modelHash, riskScore)
         );
-        bytes32 ethSignedMessageHash = keccak256(
-            abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
-        );
+        bytes32 ethHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
 
-        address[] memory verifiedSigners = new address[](signatures.length);
-        uint256 validCount = 0;
-
+        address[] memory seen = new address[](signatures.length);
         for (uint256 i = 0; i < signatures.length; i++) {
-            address recovered = recoverSigner(ethSignedMessageHash, signatures[i]);
-            require(isTelemetrySigner[recovered], "Unauthorized signer");
-
-            for (uint256 j = 0; j < validCount; j++) {
-                require(verifiedSigners[j] != recovered, "Duplicate signature");
+            address signer = _recoverSigner(ethHash, signatures[i]);
+            require(isTelemetrySigner[signer], "Unauthorized signer");
+            for (uint256 j = 0; j < i; j++) {
+                require(seen[j] != signer, "Duplicate signature");
             }
-            verifiedSigners[validCount] = recovered;
-            validCount++;
+            seen[i] = signer;
         }
 
         lastVerifiedNonce[pid] = nonce;
-        proposals[pid].riskScore = riskScore;
-        proposals[pid].isAttested = true;
-
-        emit AttestationVerified(pid, riskScore, nonce, validCount);
+        p.riskScore = riskScore;
+        p.isAttested = true;
+        emit AttestationVerified(pid, riskScore, nonce, signatures.length);
     }
 
-    function recoverSigner(bytes32 ethSignedMessageHash, bytes memory sig) internal pure returns (address) {
+    function _recoverSigner(bytes32 hash, bytes memory sig) internal pure returns (address) {
         require(sig.length == 65, "Malformed signature length");
         bytes32 r;
         bytes32 s;
@@ -202,47 +219,48 @@ contract InvestmentSmartContract {
         }
         if (v < 27) v += 27;
         require(v == 27 || v == 28, "Invalid signature 'v'");
-        return ecrecover(ethSignedMessageHash, v, r, s);
+        require(uint256(s) <= SECP256K1N_HALF, "Malleable signature");
+        address signer = ecrecover(hash, v, r, s);
+        require(signer != address(0), "Invalid signature");
+        return signer;
     }
 
+    // ------------------------------------------------------------------
+    // Allocation
+    // ------------------------------------------------------------------
+
     /**
-     * @dev Core Water-Filling Algorithm executed purely ON-CHAIN
+     * @dev Water-filling with a per-proposal cap. Each round caps at most one
+     *      proposal and redistributes the rest; the final pass uses floor division,
+     *      so the residue is reported by the caller as unallocatedTreasury (C6).
      */
     function _applyWaterFilling(uint256[] memory weights) internal pure returns (uint256[] memory allocations) {
         uint256 n = weights.length;
         allocations = new uint256[](n);
         bool[] memory isCapped = new bool[](n);
-        uint256 remainingTreasury = TREASURY_POOL;
+        uint256 remaining = TREASURY_POOL;
 
         for (uint256 round = 0; round < n; round++) {
-            uint256 uncappedWeightSum = 0;
+            uint256 wSum = 0;
             for (uint256 i = 0; i < n; i++) {
-                if (!isCapped[i]) {
-                    uncappedWeightSum += weights[i];
+                if (!isCapped[i]) wSum += weights[i];
+            }
+            if (wSum == 0) break;
+
+            bool capped = false;
+            for (uint256 i = 0; i < n; i++) {
+                if (!isCapped[i] && (remaining * weights[i]) / wSum > MAX_PROPOSAL_ALLOCATION) {
+                    allocations[i] = MAX_PROPOSAL_ALLOCATION;
+                    isCapped[i] = true;
+                    remaining -= MAX_PROPOSAL_ALLOCATION;   // safe: candidate > cap implies remaining > cap
+                    capped = true;
+                    break;
                 }
             }
 
-            if (uncappedWeightSum == 0) break;
-
-            bool capExceeded = false;
-            for (uint256 i = 0; i < n; i++) {
-                if (!isCapped[i]) {
-                    uint256 candidate = (remainingTreasury * weights[i]) / uncappedWeightSum;
-                    if (candidate > MAX_PROPOSAL_ALLOCATION) {
-                        allocations[i] = MAX_PROPOSAL_ALLOCATION;
-                        isCapped[i] = true;
-                        remainingTreasury -= MAX_PROPOSAL_ALLOCATION;
-                        capExceeded = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!capExceeded) {
+            if (!capped) {
                 for (uint256 i = 0; i < n; i++) {
-                    if (!isCapped[i]) {
-                        allocations[i] = (remainingTreasury * weights[i]) / uncappedWeightSum;
-                    }
+                    if (!isCapped[i]) allocations[i] = (remaining * weights[i]) / wSum;
                 }
                 break;
             }
@@ -250,18 +268,16 @@ contract InvestmentSmartContract {
     }
 
     /**
-     * @dev 4-Way Ablation Allocations Executed 100% On-Chain
-     * Variant 1: Pure Token Voting
-     * Variant 2: Token + PoP (No AI Risk Gate)
-     * Variant 3: Token + AI Risk Gate (No PoP)
-     * Variant 4: Full AIPoX Architecture (PoP + AI Gate + 40% Cap)
+     * @dev Variant 1: token-only. Variant 2: token + PoP. Variant 3: token + AI gate.
+     *      Variant 4: full AIPoX (PoP + AI gate + 40% cap). Variants 3 and 4 use
+     *      Bayesian odds (1-R)/R with water-filling.
      */
     function executeAblationAllocation(uint8 variant) public onlyAdmin returns (uint256[] memory allocations) {
+        require(phase == Phase.Finalized || phase == Phase.Allocated, "Tally not finalized");
         uint256 n = proposalRegistry.length;
-        uint256[] memory weights = new uint256[](n);
 
         if (variant == 1) {
-            // Variant 1: Token Only
+            require(totalActiveTokens > 0, "No tokens");
             allocations = new uint256[](n);
             for (uint256 i = 0; i < n; i++) {
                 string memory pid = proposalRegistry[i];
@@ -269,12 +285,14 @@ contract InvestmentSmartContract {
                 emit AblationExecuted(variant, pid, allocations[i]);
             }
             return allocations;
-        } else if (variant == 2) {
-            // Variant 2: Token + PoP
+        }
+
+        if (variant == 2) {
             uint256 sumComposite = 0;
             for (uint256 i = 0; i < n; i++) {
                 sumComposite += proposals[proposalRegistry[i]].compositeWeight;
             }
+            require(sumComposite > 0, "Zero composite weight");
             allocations = new uint256[](n);
             for (uint256 i = 0; i < n; i++) {
                 string memory pid = proposalRegistry[i];
@@ -282,62 +300,68 @@ contract InvestmentSmartContract {
                 emit AblationExecuted(variant, pid, allocations[i]);
             }
             return allocations;
-        } else if (variant == 3) {
-            // Variant 3: Token + AI Gate
-            for (uint256 i = 0; i < n; i++) {
-                string memory pid = proposalRegistry[i];
-                require(proposals[pid].isAttested, "Proposal not attested");
-                uint256 R_p = proposals[pid].riskScore;
-                uint256 oddsRatio = ((SCALE - R_p) * SCALE) / R_p;
-                weights[i] = (proposals[pid].rawTokenVotes * oddsRatio) / SCALE;
-            }
-            allocations = _applyWaterFilling(weights);
-            for (uint256 i = 0; i < n; i++) {
-                emit AblationExecuted(variant, proposalRegistry[i], allocations[i]);
-            }
-            return allocations;
-        } else if (variant == 4) {
-            // Variant 4: Full AIPoX
-            for (uint256 i = 0; i < n; i++) {
-                string memory pid = proposalRegistry[i];
-                require(proposals[pid].isAttested, "Proposal not attested");
-                uint256 V_p = proposals[pid].compositeWeight;
-                uint256 R_p = proposals[pid].riskScore;
-                uint256 oddsRatio = ((SCALE - R_p) * SCALE) / R_p;
-                weights[i] = (V_p * oddsRatio) / SCALE;
-            }
-            allocations = _applyWaterFilling(weights);
-            for (uint256 i = 0; i < n; i++) {
-                string memory pid = proposalRegistry[i];
-                proposals[pid].targetAllocationUSD = allocations[i];
-                uint256 tradAlloc = (TREASURY_POOL * proposals[pid].rawTokenVotes) / totalActiveTokens;
-                emit TreasuryAllocated(pid, allocations[i], tradAlloc);
-                emit AblationExecuted(variant, pid, allocations[i]);
-            }
-            return allocations;
-        } else {
-            revert("Invalid ablation variant");
         }
+
+        require(variant == 3 || variant == 4, "Invalid ablation variant");
+
+        uint256[] memory weights = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) {
+            Proposal storage p = proposals[proposalRegistry[i]];
+            require(p.isAttested, "Proposal not attested");
+            uint256 base = variant == 3 ? p.rawTokenVotes : p.compositeWeight;
+            uint256 oddsRatio = ((SCALE - p.riskScore) * SCALE) / p.riskScore;
+            weights[i] = (base * oddsRatio) / SCALE;
+        }
+        allocations = _applyWaterFilling(weights);
+
+        uint256 sum = 0;
+        for (uint256 i = 0; i < n; i++) {
+            string memory pid = proposalRegistry[i];
+            sum += allocations[i];
+            emit AblationExecuted(variant, pid, allocations[i]);
+            if (variant == 4) {
+                Proposal storage p = proposals[pid];
+                p.targetAllocationUSD = allocations[i];
+                uint256 tradAlloc = (TREASURY_POOL * p.rawTokenVotes) / totalActiveTokens;
+                emit TreasuryAllocated(pid, allocations[i], tradAlloc);
+            }
+        }
+
+        if (variant == 4) {
+            unallocatedTreasury = TREASURY_POOL - sum;
+            phase = Phase.Allocated;
+        }
+        return allocations;
     }
 
     function executeMacroTreasuryAllocation() external onlyAdmin returns (uint256[] memory) {
-    return executeAblationAllocation(4);
+        return executeAblationAllocation(4);
     }
 
+    /**
+     * @dev C7: tranches must be sequential and cumulative mu may not exceed 100%.
+     *      Total released can never exceed the assigned allocation.
+     */
     function disburseMilestoneTranche(
         string memory pid,
         uint256 trancheIndex,
         uint256 muBps,
         uint256 progressBps
     ) external onlyAdmin {
-        Proposal storage prop = proposals[pid];
-        require(prop.targetAllocationUSD > 0, "No allocation assigned");
-        require(muBps <= 10000 && progressBps <= 10000, "Percentage overflow");
+        Proposal storage p = proposals[pid];
+        require(p.isAttested && p.targetAllocationUSD > 0, "No allocation assigned");
+        require(trancheIndex == lastTrancheIndex[pid] + 1, "Tranche out of sequence");
+        require(muBps > 0 && muBps <= 10000 && progressBps <= 10000, "Percentage out of range");
 
-        uint256 plannedTranche = (prop.targetAllocationUSD * muBps) / 10000;
-        uint256 releasedAmount = (plannedTranche * progressBps) / 10000;
+        cumulativeMuBps[pid] += muBps;
+        require(cumulativeMuBps[pid] <= 10000, "Tranches exceed budget");
+        lastTrancheIndex[pid] = trancheIndex;
 
-        prop.totalReleasedUSD += releasedAmount;
-        emit TrancheDisbursed(pid, trancheIndex, releasedAmount);
+        uint256 planned = (p.targetAllocationUSD * muBps) / 10000;
+        uint256 released = (planned * progressBps) / 10000;
+        p.totalReleasedUSD += released;
+        require(p.totalReleasedUSD <= p.targetAllocationUSD, "Over-disbursement");
+
+        emit TrancheDisbursed(pid, trancheIndex, released);
     }
 }

@@ -1,7 +1,0 @@
-Whale Capital Stake (c),Margin Factor (2c - 1),"Critical Participation Weight (beta*, gamma=1)",Safe Parameter Recommendation (beta > alpha)
-51% (c = 0.51),0.02,0.0435,"alpha = 0.45, beta = 0.55"
-55% (c = 0.55),0.10,0.1852,"alpha = 0.45, beta = 0.55"
-60% (c = 0.60),0.20,0.3125,"alpha = 0.45, beta = 0.55"
-65% (c = 0.65),0.30,0.4054,"alpha = 0.45, beta = 0.55"
-70% (c = 0.70),0.40,0.4762,"alpha = 0.45, beta = 0.55"
-75% (c = 0.75),0.50,0.5319,"alpha = 0.45, beta = 0.55"

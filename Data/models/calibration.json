@@ -1,0 +1,7 @@
+{
+    "tau_anomaly": 0.65,
+    "target_percentile_validation": 98.39,
+    "q_val_raw_mse": 0.01480071941835317,
+    "tau_norm": 0.022770337566697184,
+    "note": "threshold chosen on validation honest errors; equivalent to raw MSE >= q_val"
+}
