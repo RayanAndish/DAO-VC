@@ -1,0 +1,79 @@
+{
+  "seed": 42,
+  "cohort": "venture_cohort_primary.csv",
+  "cohort_sha256": "60f76d84ab813ec76c3be05e3525e638c4680bf8600c05ecf47546d0af24b391",
+  "user_file": "user_behavior_clean.csv",
+  "user_sha256": "7a322fed6eb05063efa0944fde129a5f37c2496be4948f899bbf0b691eb74e2f",
+  "risk_model_test": {
+    "n": 1797,
+    "default_rate": 0.6238,
+    "auc_vs_label": 0.6395,
+    "brier_vs_label": 0.2301,
+    "oracle_auc_truth": 0.7792,
+    "brier_truth_baseline_mean": 0.2347,
+    "mae_vs_truth": 0.1852,
+    "auc_vs_truth": 0.6395,
+    "calibration_deciles_vs_truth": [
+      {
+        "mean_pred": 0.2804,
+        "mean_truth": 0.3276,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.4108,
+        "mean_truth": 0.5185,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.4644,
+        "mean_truth": 0.5787,
+        "n": 179
+      },
+      {
+        "mean_pred": 0.4991,
+        "mean_truth": 0.6087,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.5293,
+        "mean_truth": 0.6273,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.556,
+        "mean_truth": 0.6511,
+        "n": 179
+      },
+      {
+        "mean_pred": 0.582,
+        "mean_truth": 0.6915,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.6091,
+        "mean_truth": 0.7193,
+        "n": 179
+      },
+      {
+        "mean_pred": 0.6366,
+        "mean_truth": 0.7162,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.6801,
+        "mean_truth": 0.7706,
+        "n": 180
+      }
+    ]
+  },
+  "anomaly_model_test": {
+    "n": 90000,
+    "bot_rate": 0.05,
+    "auc_vs_is_bot": 1.0,
+    "threshold_tau": 0.478723,
+    "threshold_quantile_honest_val": 0.99,
+    "detection_rate": 1.0,
+    "false_alarm_rate": 0.01
+  },
+  "model_hash": "0x4cb11bc1ad45b23fc790f6b3eff6e824fb10813f734a39069e2ed608a05c6584"
+}

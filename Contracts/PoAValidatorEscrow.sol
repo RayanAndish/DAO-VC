@@ -12,7 +12,7 @@ contract PoAValidatorEscrow {
     address payable public constant DEAD_ADDRESS = payable(0x000000000000000000000000000000000000dEaD);
     uint256 public constant MIN_COLLATERAL = 1 ether;          // script bonds 10 ETH per validator
     uint256 public constant UNBONDING_DELAY_BLOCKS = 20;
-    uint256 public constant EJECTION_BPS = 6500;               // tau_Anomaly = 0.65
+    uint256 public constant EJECTION_BPS = 4359;               // tau_Anomaly = 0.4359 (models/threshold.json)
     uint256 public constant MAX_ATTESTATION_DRIFT = 5000;
     uint256 public constant SECP256K1N_HALF =
         0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0;

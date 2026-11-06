@@ -1,0 +1,52 @@
+{
+  "raw_rows": 600000,
+  "steps": [
+    {
+      "step": "drop exact duplicates",
+      "rows_before": 600000,
+      "rows_after": 600000,
+      "removed": 0
+    },
+    {
+      "step": "drop rows with missing values",
+      "rows_before": 600000,
+      "rows_after": 600000,
+      "removed": 0
+    },
+    {
+      "step": "drop non-numeric values",
+      "rows_before": 600000,
+      "rows_after": 600000,
+      "removed": 0
+    },
+    {
+      "step": "drop out-of-range values",
+      "rows_before": 600000,
+      "rows_after": 600000,
+      "removed": 0
+    }
+  ],
+  "missing_before_drop": {
+    "transaction_count": 0,
+    "balance_native": 0,
+    "total_gas_used": 0,
+    "latency_ms": 0,
+    "tx_entropy": 0,
+    "packet_drop_ratio": 0,
+    "vote_clustering": 0,
+    "uptime_ratio": 0,
+    "is_bot": 0
+  },
+  "range_violations_by_column": {
+    "tx_entropy": 0,
+    "packet_drop_ratio": 0,
+    "vote_clustering": 0,
+    "uptime_ratio": 0
+  },
+  "class_counts": {
+    "0": 570000,
+    "1": 30000
+  },
+  "final_rows": 600000,
+  "output_csv": "user_behavior_clean.csv"
+}

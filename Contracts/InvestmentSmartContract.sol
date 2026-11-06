@@ -58,6 +58,12 @@ contract InvestmentSmartContract {
     string[] public proposalRegistry;
 
     mapping(address => VoterProfile) public voterRegistry;
+    uint256 public minVoteStake = 0;             // minimum tokens an identity must lock to vote
+    mapping(address => uint256) public lockedStake; // tokens locked by a voter in the current epoch
+    uint256 public totalLockedStake;
+
+    event StakeLocked(address indexed voter, uint256 amount);
+    event StakeReleased(address indexed voter, uint256 amount);
     mapping(uint256 => mapping(address => bool)) public hasVoted;   // C1: keyed by epoch, one vote total
     mapping(string => uint256) public lastVerifiedNonce;
     mapping(string => uint256) public lastTrancheIndex;             // C7
@@ -131,19 +137,31 @@ contract InvestmentSmartContract {
         votingEpoch = _epoch;
         phase = Phase.Voting;
     }
+    
+    function setMinVoteStake(uint256 _min) external onlyAdmin {
+        require(phase == Phase.Idle, "Cannot change after registration");
+        minVoteStake = _min;
+    }
 
     function castVote(string memory pid) external inPhase(Phase.Voting) {
         require(proposals[pid].exists, "Proposal not registered");
-        VoterProfile storage vp = voterRegistry[msg.sender];
-        require(vp.isRegistered, "Caller not registered");
-        require(!hasVoted[votingEpoch][msg.sender], "One vote per voter per epoch");
-        hasVoted[votingEpoch][msg.sender] = true;
+        require(voterRegistry[msg.sender].isRegistered, "Caller not registered");
+        require(!hasVoted[votingEpoch][msg.sender], "One vote per voter per epoch"); // C1
 
-        uint256 tokens = vp.tokenBalance;
-        uint256 pScore = vp.participationScore;
+        uint256 tokens = voterRegistry[msg.sender].tokenBalance;
+        require(tokens >= minVoteStake, "Stake below minimum");
+        require(lockedStake[msg.sender] == 0, "Stake already locked");
+
+        hasVoted[votingEpoch][msg.sender] = true;
+        lockedStake[msg.sender] = tokens;
+        totalLockedStake += tokens;
+        emit StakeLocked(msg.sender, tokens);
+
+        uint256 pScore = voterRegistry[msg.sender].participationScore;
 
         proposals[pid].rawTokenVotes += tokens;
         proposals[pid].rawParticipationSum += pScore;
+
         totalActiveTokens += tokens;
         totalParticipationScoreSum += pScore;
         totalVotesCastCount++;
@@ -162,6 +180,15 @@ contract InvestmentSmartContract {
                 / (10000 * totalParticipationScoreSum);
             p.compositeWeight = tokenPart + popPart;
         }
+    }
+    
+    function releaseStake() external {
+        require(phase != Phase.Voting, "Stake locked until finalisation");
+        uint256 amount = lockedStake[msg.sender];
+        require(amount > 0, "Nothing locked");
+        lockedStake[msg.sender] = 0;
+        totalLockedStake -= amount;
+        emit StakeReleased(msg.sender, amount);
     }
 
     // ------------------------------------------------------------------

@@ -5,14 +5,14 @@ On-chain verification suite for AIPoX on a local Ganache node.
 
 Configuration
   GANACHE_MNEMONIC  required, BIP-39 mnemonic of the Ganache accounts (no default is stored here)
-  GANACHE_RPC       optional, default http://172.16.22.120:8545
+  GANACHE_RPC       optional, default http://172.168.22.120:8545
 
 Suites
   1  PoA validator escrow: bonding, minimum collateral, timelocked unbonding, k-of-M
      attested slashing, ejection, negative tests.
   2  Governance: four-way ablation over 1,000 honest voters, with negative tests for
      C1 (double vote), C2 (PoP bound), C3 (risk bound), C5 (phase lock), C7 (tranches).
-  3  Sybil: 1,500 identities with 1,000 tokens and 0 PoP vote for P-4.
+  3  Sybil: 1,500 identities with 1,000 tokens and 0 PoP vote for the highest-R proposal.
   4  Whale: one account with 60% of tokens. P = 0.28 (main) and P = 0.98 (worst case).
 
 Outputs (project root)
@@ -44,6 +44,7 @@ from eth_account import Account
 from eth_account.messages import encode_defunct
 from solcx import compile_standard, install_solc, set_solc_version
 from web3 import Web3
+from web3.logs import DISCARD   # decode only the requested event; ignore other logs in the receipt
 
 PROJECT_DIR = Path(__file__).resolve().parent
 DATA_DIR = PROJECT_DIR / "Data"
@@ -148,7 +149,8 @@ def send_eth(to, eth):
     }
     tx_hash = w3.eth.send_raw_transaction(deployer.sign_transaction(tx).raw_transaction)
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    check("setup", "funding transfer succeeded", receipt.status == 1, f"to {to[:10]}...")
+    if receipt.status != 1:                       # setup transfers are not recorded as test results
+        raise RuntimeError(f"funding transfer to {to} failed")
 
 
 def fund_low(accounts, min_eth, top_eth):
@@ -204,6 +206,8 @@ if not hash_file.exists():
     sys.exit("[ERROR] Data/models/model_hash.json missing. Run Data/1_train_models.py first.")
 MODEL_HASH = bytes.fromhex(json.loads(hash_file.read_text(encoding="utf-8"))["model_hash"][2:])
 check("setup", "ModelHash is 32 bytes", len(MODEL_HASH) == 32)
+THRESHOLD_BPS = int(json.loads((DATA_DIR / "models" / "threshold.json").read_text(encoding="utf-8"))["threshold_bps"])
+check("setup", "threshold file loaded", THRESHOLD_BPS > 0, f"{THRESHOLD_BPS} bps")
 
 prop_file = DATA_DIR / "Table_Proposals_Feature_Profiles.csv"
 if not prop_file.exists():
@@ -211,6 +215,9 @@ if not prop_file.exists():
 df_prop = pd.read_csv(prop_file)
 PIDS = list(df_prop["Proposal_ID"].values)
 RISK = dict(zip(df_prop["Proposal_ID"], df_prop["AI_Risk_Score_R_p"]))
+SAFE = min(PIDS, key=lambda p: RISK[p])    # lowest R(p): role fixed by data
+RISKY = max(PIDS, key=lambda p: RISK[p])   # highest R(p): role fixed by data
+
 
 
 def risk_wei(pid):
@@ -257,7 +264,7 @@ def run_ablation(contract, variants):
     out, receipts = {}, {}
     for v in variants:
         rec = transact(contract.functions.executeAblationAllocation(v))
-        evs = contract.events.AblationExecuted().process_receipt(rec)
+        evs = contract.events.AblationExecuted().process_receipt(rec, errors=DISCARD)
         out[v] = {str(e["args"]["proposalId"]): int(e["args"]["allocationUSD"]) for e in evs}
         receipts[v] = rec
         check("ablation", f"variant {v} emitted {len(PIDS)} allocations", len(out[v]) == len(PIDS))
@@ -308,6 +315,9 @@ check("setup", "deployer balance sufficient", bal_eth > needed_eth, f"({bal_eth:
 # ==============================================================================
 section("[SUITE 1] PoA validator escrow")
 escrow = deploy(Escrow, committee_addrs, THRESHOLD_K, MODEL_HASH)
+check("setup", "escrow EJECTION_BPS equals threshold.json",
+      escrow.functions.EJECTION_BPS().call() == THRESHOLD_BPS,
+      f"contract={escrow.functions.EJECTION_BPS().call()} file={THRESHOLD_BPS}")
 
 candidates = [Account.create() for _ in range(5)]
 fund_low(candidates, ESCROW_MIN_ETH, ESCROW_MIN_ETH + 0.5)
@@ -355,7 +365,7 @@ expect_revert("escrow", "zero anomaly rejected",
               escrow.functions.slashValidatorWithAttestation(
                   val2.address, 0, ep2, 1003, MODEL_HASH, sign_escrow(val2.address, 0, ep2, 1003)))
 
-# Ejecting slash (anomaly 0.75 >= 0.65) for val5
+# Ejecting slash (anomaly 0.75 >= tau) for val5
 ep3 = w3.eth.block_number
 transact(escrow.functions.slashValidatorWithAttestation(
     val5.address, 7500, ep3, 2001, MODEL_HASH, sign_escrow(val5.address, 7500, ep3, 2001)))
@@ -363,6 +373,23 @@ check("escrow", "active set contracted to 4", escrow.functions.getActiveValidato
 d5 = escrow.functions.getValidatorDetails(val5.address).call()
 check("escrow", "ejected validator is inactive and blacklisted", d5[2] is False and d5[3] is True)
 check("escrow", "75% of bond burned, 2.5 ETH remaining", d5[0] == Web3.to_wei(2.5, "ether"), f"bonded={d5[0]}")
+# Threshold boundary (E6): just below tau must not eject, exactly tau must eject
+val6, val7 = candidates[2], candidates[3]
+ep4 = w3.eth.block_number
+transact(escrow.functions.slashValidatorWithAttestation(
+    val6.address, THRESHOLD_BPS - 1, ep4, 3001, MODEL_HASH,
+    sign_escrow(val6.address, THRESHOLD_BPS - 1, ep4, 3001)))
+d6 = escrow.functions.getValidatorDetails(val6.address).call()
+check("escrow", f"anomaly {THRESHOLD_BPS - 1} bps (just below tau) does not eject",
+      d6[2] is True and d6[3] is False)
+
+ep5 = w3.eth.block_number
+transact(escrow.functions.slashValidatorWithAttestation(
+    val7.address, THRESHOLD_BPS, ep5, 3002, MODEL_HASH,
+    sign_escrow(val7.address, THRESHOLD_BPS, ep5, 3002)))
+d7 = escrow.functions.getValidatorDetails(val7.address).call()
+check("escrow", f"anomaly {THRESHOLD_BPS} bps (equal to tau) ejects",
+      d7[2] is False and d7[3] is True)
 
 # ==============================================================================
 # SUITE 2: GOVERNANCE AND 4-WAY ABLATION
@@ -410,18 +437,19 @@ ablation_base, _ = run_ablation(contract_base, [1, 2, 3, 4])
 v1, v2, v3, v4 = ablation_base[1], ablation_base[2], ablation_base[3], ablation_base[4]
 check("ablation", "variant 4 cap respected for every proposal",
       all(a <= 400_000 * 10 ** 18 for a in v4.values()))
-check("ablation", "P-3 receives the cap in variants 3 and 4",
-      v3["P-3"] == 400_000 * 10 ** 18 and v4["P-3"] == 400_000 * 10 ** 18)
+SAFE = min(PIDS, key=lambda p: RISK[p])   # lowest default risk R(p)
+check("ablation", f"lowest-R proposal {SAFE} gets the largest allocation in variants 3 and 4",
+      v3[SAFE] == max(v3.values()) and v4[SAFE] == max(v4.values()))
 
 # C7: tranches are sequential and cumulative-capped
-p3_target = prop_state(contract_base, "P-3")["target"]
-transact(contract_base.functions.disburseMilestoneTranche("P-3", 1, 2500, 10000))
+p3_target = prop_state(contract_base, SAFE)["target"]
+transact(contract_base.functions.disburseMilestoneTranche(SAFE, 1, 2500, 10000))
 expected = p3_target * 2500 // 10000
 check("tranche", "tranche 1 releases exactly 25% of target",
-      prop_state(contract_base, "P-3")["released"] == expected, f"{usd(expected):,.2f} USD")
-expect_revert("tranche", "C7: tranche 1 repeated", contract_base.functions.disburseMilestoneTranche("P-3", 1, 2500, 10000))
+      prop_state(contract_base, SAFE)["released"] == expected, f"{usd(expected):,.2f} USD")
+expect_revert("tranche", "C7: tranche 1 repeated", contract_base.functions.disburseMilestoneTranche(SAFE, 1, 2500, 10000))
 expect_revert("tranche", "C7: tranches exceed 100% budget",
-              contract_base.functions.disburseMilestoneTranche("P-3", 2, 8000, 10000))
+              contract_base.functions.disburseMilestoneTranche(SAFE, 2, 8000, 10000))
 
 base_rows = []
 for pid in PIDS:
@@ -441,24 +469,24 @@ baseline_alloc = dict(zip(df_base["Proposal_ID"], df_base["Target_Allocation_USD
 trad_tokens = {pid: prop_state(contract_base, pid)["raw_tokens"] for pid in PIDS}
 
 variants_list = [v1, v2, v3, v4]
-p3_usd = [usd(v["P-3"]) for v in variants_list]
-p2_usd = [usd(v["P-2"]) for v in variants_list]
+p3_usd = [usd(v[SAFE]) for v in variants_list]
+p2_usd = [usd(v[RISKY]) for v in variants_list]
 table5 = pd.DataFrame({
     "Architecture Variant": ["1. Token-only (traditional dPoS)", "2. Token + PoP (no AI gate)",
                              "3. Token + AI gate (no PoP)", "4. Full AIPoX (PoP + AI gate)"],
-    "P-3 Allocation ($)": [f"${x:,.2f}" for x in p3_usd],
-    "P-2 Allocation ($)": [f"${x:,.2f}" for x in p2_usd],
-    "P-3 Rank": [rank_of({p: v[p] for p in PIDS}, "P-3") for v in variants_list],
-    "P-2 Rank": [rank_of({p: v[p] for p in PIDS}, "P-2") for v in variants_list],
-    "P-3 Net Gain": ["Baseline (0.0%)"] + [f"{(x - p3_usd[0]) / p3_usd[0] * 100:+.2f}%" for x in p3_usd[1:]],
+    "Lowest-R Allocation ($)": [f"${x:,.2f}" for x in p3_usd],
+    "Highest-R Allocation ($)": [f"${x:,.2f}" for x in p2_usd],
+    "Lowest-R Rank": [rank_of({p: v[p] for p in PIDS}, SAFE) for v in variants_list],
+    "Highest-R Rank": [rank_of({p: v[p] for p in PIDS}, RISKY) for v in variants_list],
+    "Lowest-R Net Gain": ["Baseline (0.0%)"] + [f"{(x - p3_usd[0]) / p3_usd[0] * 100:+.2f}%" for x in p3_usd[1:]],
 })
 table5.to_csv(PROJECT_DIR / "Table_5_Ablation_Study.csv", index=False)
 print(table5.to_string(index=False), flush=True)
 
 # ==============================================================================
-# SUITE 3: SYBIL ATTACK ON P-4
+# SUITE 3: SYBIL ATTACK ON THE HIGHEST-R PROPOSAL (RISKY)
 # ==============================================================================
-section("[SUITE 3] 1,500-identity Sybil attack on P-4")
+section("[SUITE 3] 1,500-identity Sybil attack on the highest-R proposal")
 contract_sybil = deploy(Invest, committee_addrs, THRESHOLD_K, MODEL_HASH)
 for pid in PIDS:
     transact(contract_sybil.functions.registerProposal(pid))
@@ -476,12 +504,12 @@ transact(contract_sybil.functions.initVotingEpoch(epoch_s))
 for i, pid in enumerate(voter_choices):
     transact(contract_sybil.functions.castVote(pid), signer=voter_accounts[i])
 for a in sybil_accounts:
-    transact(contract_sybil.functions.castVote("P-4"), signer=a)
+    transact(contract_sybil.functions.castVote(RISKY), signer=a)
 transact(contract_sybil.functions.finalizeVotingTally())
 attest_all(contract_sybil, epoch_s, nonce_base=201)
 _, rec_s = run_ablation(contract_sybil, [4])
 
-sybil_events = contract_sybil.events.TreasuryAllocated().process_receipt(rec_s[4])
+sybil_events = contract_sybil.events.TreasuryAllocated().process_receipt(rec_s[4], errors=DISCARD)
 check("sybil", "TreasuryAllocated emitted for all proposals", len(sybil_events) == len(PIDS))
 s_alloc = {str(e["args"]["proposalId"]): int(e["args"]["allocationAmountUSD"]) for e in sybil_events}
 s_tokens = {pid: prop_state(contract_sybil, pid)["raw_tokens"] for pid in PIDS}
@@ -505,21 +533,21 @@ s_trad_rank = {p: rank_of(s_tokens, p) for p in PIDS}
 s_aipox_rank = {p: rank_of(s_alloc, p) for p in PIDS}
 table6 = pd.DataFrame({
     "Proposal ID": PIDS,
-    "Traditional Rank (Under Attack)": [label_trad(p, s_trad_rank[p], "P-4") for p in PIDS],
-    "AIPoX Rank (Under Attack)": [label_aipox(p, s_aipox_rank[p], "P-4", "P-3") for p in PIDS],
+    "Traditional Rank (Under Attack)": [label_trad(p, s_trad_rank[p], RISKY) for p in PIDS],
+    "AIPoX Rank (Under Attack)": [label_aipox(p, s_aipox_rank[p], RISKY, SAFE) for p in PIDS],
     "Post-Attack Allocation (USD)": [usd(s_alloc[p]) for p in PIDS],
 }).sort_values("Post-Attack Allocation (USD)", ascending=False).reset_index(drop=True)
 table6.to_csv(PROJECT_DIR / "Table_6_Sybil_Attack.csv", index=False)
 print(table6.to_string(index=False), flush=True)
 
-p4_base = baseline_alloc["P-4"]
-p4_attack = usd(s_alloc["P-4"])
-print(f"[*] P-4 allocation change under Sybil attack: {(p4_attack - p4_base) / p4_base * 100:+.2f}%", flush=True)
+p4_base = baseline_alloc[RISKY]
+p4_attack = usd(s_alloc[RISKY])
+print(f"[*] {RISKY} allocation change under Sybil attack: {(p4_attack - p4_base) / p4_base * 100:+.2f}%", flush=True)
 
 # ==============================================================================
 # SUITE 4: WHALE ATTACK (main P = 0.28 and worst-case P = 0.98)
 # ==============================================================================
-section("[SUITE 4] 60% whale attack on P-2")
+section("[SUITE 4] 60% whale attack on the highest-R proposal")
 
 
 def run_whale(p_bps, t7_name, t8_name, tag):
@@ -540,12 +568,12 @@ def run_whale(p_bps, t7_name, t8_name, tag):
     transact(contract_w.functions.initVotingEpoch(epoch_w))
     for i, pid in enumerate(voter_choices):
         transact(contract_w.functions.castVote(pid), signer=voter_accounts[i])
-    transact(contract_w.functions.castVote("P-2"), signer=whale)
+    transact(contract_w.functions.castVote(RISKY), signer=whale)
     transact(contract_w.functions.finalizeVotingTally())
     attest_all(contract_w, epoch_w, nonce_base=301)
     _, rec_w = run_ablation(contract_w, [4])
 
-    events = contract_w.events.TreasuryAllocated().process_receipt(rec_w[4])
+    events = contract_w.events.TreasuryAllocated().process_receipt(rec_w[4], errors=DISCARD)
     check("whale", f"[{tag}] TreasuryAllocated emitted for all proposals", len(events) == len(PIDS))
     w_alloc = {str(e["args"]["proposalId"]): int(e["args"]["allocationAmountUSD"]) for e in events}
     w_tokens = {pid: prop_state(contract_w, pid)["raw_tokens"] for pid in PIDS}
@@ -554,8 +582,8 @@ def run_whale(p_bps, t7_name, t8_name, tag):
 
     t7 = pd.DataFrame({
         "Proposal ID": PIDS,
-        "Traditional Rank (Under Attack)": [label_trad(p, w_trad_rank[p], "P-2") for p in PIDS],
-        "AIPoX Rank (Under Attack)": [label_aipox(p, w_aipox_rank[p], "P-2", "P-3") for p in PIDS],
+        "Traditional Rank (Under Attack)": [label_trad(p, w_trad_rank[p], RISKY) for p in PIDS],
+        "AIPoX Rank (Under Attack)": [label_aipox(p, w_aipox_rank[p], RISKY, SAFE) for p in PIDS],
     })
     t7.to_csv(PROJECT_DIR / t7_name, index=False)
 

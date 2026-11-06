@@ -1,11 +1,15 @@
 {
-    "model_hash": "0xee572bc6e502b835d5e3e4ddb5d7e991ca725d026b57dc5c11f8249113ddeb5b",
+    "model_hash": "0x161e99ba912a4c98f45c8a186731a590951df3bbc82c0552be38b1139bbb134f",
     "algorithm": "sha256",
+    "protocol": "v2_validation_early_stopping",
     "covers": [
         "risk weights",
         "autoencoder weights",
         "scalers",
         "feature schema",
-        "architecture"
+        "architecture",
+        "threshold",
+        "cohort hash",
+        "telemetry hash"
     ]
 }

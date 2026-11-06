@@ -1,0 +1,223 @@
+{
+  "source": "crunchbase_clean.csv",
+  "seed": 42,
+  "split_success_rates": {
+    "train": 0.5958,
+    "val": 0.4612,
+    "test": 0.2677
+  },
+  "main": {
+    "tag": "main_leakage_free",
+    "feature_cols": [
+      "age_at_first_funding_yrs",
+      "age_missing",
+      "n_categories",
+      "country_CAN",
+      "country_CHN",
+      "country_DEU",
+      "country_FRA",
+      "country_GBR",
+      "country_IND",
+      "country_ISR",
+      "country_OTHER",
+      "country_RUS",
+      "country_UNKNOWN",
+      "country_USA"
+    ],
+    "standardized_coefficients": {
+      "age_at_first_funding_yrs": 0.4714,
+      "age_missing": -0.1858,
+      "n_categories": 0.0556,
+      "country_CAN": 0.0223,
+      "country_CHN": 0.0797,
+      "country_DEU": 0.0355,
+      "country_FRA": -0.0117,
+      "country_GBR": -0.0272,
+      "country_IND": -0.0197,
+      "country_ISR": 0.0306,
+      "country_OTHER": -0.0883,
+      "country_RUS": -0.067,
+      "country_UNKNOWN": -0.275,
+      "country_USA": 0.2079
+    },
+    "intercept_standardized": 0.4336,
+    "validation": {
+      "n": 1921,
+      "success_rate": 0.4612,
+      "auc": 0.7568,
+      "brier": 0.2061,
+      "brier_baseline_train_mean": 0.2666
+    },
+    "test": {
+      "n": 1797,
+      "success_rate": 0.2677,
+      "auc": 0.8446,
+      "brier": 0.1821,
+      "brier_baseline_train_mean": 0.3037
+    },
+    "test_calibration_deciles": [
+      {
+        "mean_pred": 0.2432,
+        "obs_rate": 0.0207,
+        "n": 193
+      },
+      {
+        "mean_pred": 0.2628,
+        "obs_rate": 0.0359,
+        "n": 167
+      },
+      {
+        "mean_pred": 0.3018,
+        "obs_rate": 0.0279,
+        "n": 179
+      },
+      {
+        "mean_pred": 0.3294,
+        "obs_rate": 0.0167,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.4126,
+        "obs_rate": 0.1444,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.5058,
+        "obs_rate": 0.2889,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.5722,
+        "obs_rate": 0.5303,
+        "n": 198
+      },
+      {
+        "mean_pred": 0.6236,
+        "obs_rate": 0.2375,
+        "n": 160
+      },
+      {
+        "mean_pred": 0.6814,
+        "obs_rate": 0.5389,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.8794,
+        "obs_rate": 0.8056,
+        "n": 180
+      }
+    ]
+  },
+  "sensitivity": {
+    "tag": "sensitivity_with_lifetime_totals",
+    "feature_cols": [
+      "age_at_first_funding_yrs",
+      "age_missing",
+      "n_categories",
+      "funding_rounds",
+      "log_funding_total",
+      "years_to_last_funding",
+      "has_funding_total",
+      "country_CAN",
+      "country_CHN",
+      "country_DEU",
+      "country_FRA",
+      "country_GBR",
+      "country_IND",
+      "country_ISR",
+      "country_OTHER",
+      "country_RUS",
+      "country_UNKNOWN",
+      "country_USA"
+    ],
+    "standardized_coefficients": {
+      "age_at_first_funding_yrs": 0.353,
+      "age_missing": -0.1728,
+      "n_categories": 0.1341,
+      "funding_rounds": 0.0056,
+      "log_funding_total": 0.6908,
+      "years_to_last_funding": 0.4126,
+      "has_funding_total": 0.0971,
+      "country_CAN": 0.0286,
+      "country_CHN": 0.0442,
+      "country_DEU": 0.0416,
+      "country_FRA": -0.0147,
+      "country_GBR": -0.0051,
+      "country_IND": -0.0114,
+      "country_ISR": 0.0182,
+      "country_OTHER": -0.0195,
+      "country_RUS": -0.0704,
+      "country_UNKNOWN": -0.2364,
+      "country_USA": 0.1427
+    },
+    "intercept_standardized": 0.5115,
+    "validation": {
+      "n": 1921,
+      "success_rate": 0.4612,
+      "auc": 0.8244,
+      "brier": 0.1724,
+      "brier_baseline_train_mean": 0.2666
+    },
+    "test": {
+      "n": 1797,
+      "success_rate": 0.2677,
+      "auc": 0.8861,
+      "brier": 0.1333,
+      "brier_baseline_train_mean": 0.3037
+    },
+    "test_calibration_deciles": [
+      {
+        "mean_pred": 0.0662,
+        "obs_rate": 0.0167,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.1274,
+        "obs_rate": 0.0,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.1982,
+        "obs_rate": 0.038,
+        "n": 237
+      },
+      {
+        "mean_pred": 0.2394,
+        "obs_rate": 0.0574,
+        "n": 122
+      },
+      {
+        "mean_pred": 0.2838,
+        "obs_rate": 0.0944,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.369,
+        "obs_rate": 0.2346,
+        "n": 179
+      },
+      {
+        "mean_pred": 0.4624,
+        "obs_rate": 0.2833,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.5401,
+        "obs_rate": 0.4581,
+        "n": 179
+      },
+      {
+        "mean_pred": 0.6606,
+        "obs_rate": 0.6556,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.8671,
+        "obs_rate": 0.8444,
+        "n": 180
+      }
+    ]
+  },
+  "leakage_gap_test_auc": 0.0415,
+  "artifact": "crunchbase_outcome_logit.joblib"
+}

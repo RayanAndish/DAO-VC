@@ -1,0 +1,7 @@
+{
+  "tau": 0.4358542859554291,
+  "units": "mean squared error of standardized 8-D telemetry; scaler fitted on honest training rows",
+  "threshold_bps": 4359,
+  "quantile_honest_val": 0.99,
+  "source_model_hash": "0x161e99ba912a4c98f45c8a186731a590951df3bbc82c0552be38b1139bbb134f"
+}

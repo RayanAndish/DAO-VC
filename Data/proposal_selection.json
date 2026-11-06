@@ -1,0 +1,28 @@
+{
+  "rule": "nearest test-split proposal to each R(p) quantile",
+  "quantiles": [
+    0.1,
+    0.3,
+    0.5,
+    0.7,
+    0.9
+  ],
+  "quantile_targets": [
+    0.371017,
+    0.482514,
+    0.541779,
+    0.599374,
+    0.657766
+  ],
+  "selected_R": {
+    "P-1": 0.371357,
+    "P-2": 0.482516,
+    "P-3": 0.541779,
+    "P-4": 0.599348,
+    "P-5": 0.657715
+  },
+  "test_rows": 1797,
+  "model_hash": "0x161e99ba912a4c98f45c8a186731a590951df3bbc82c0552be38b1139bbb134f",
+  "cohort_sha256": "60f76d84ab813ec76c3be05e3525e638c4680bf8600c05ecf47546d0af24b391",
+  "risk_model_sha256": "d797d36bb38824a72c91fd36803318248b4e8dd2b0584d5874a14292acbe1b42"
+}

@@ -1,0 +1,69 @@
+{
+  "raw_rows": 66368,
+  "steps": [
+    {
+      "step": "drop duplicate permalink",
+      "rows_before": 66368,
+      "rows_after": 66368,
+      "removed": 0
+    },
+    {
+      "step": "drop undetermined status (operating / unknown)",
+      "rows_before": 66368,
+      "rows_after": 13334,
+      "removed": 53034
+    },
+    {
+      "step": "drop missing/unparsed first_funding_at",
+      "rows_before": 13334,
+      "rows_after": 13332,
+      "removed": 2
+    },
+    {
+      "step": "drop implausible first_funding year",
+      "rows_before": 13332,
+      "rows_after": 13332,
+      "removed": 0
+    }
+  ],
+  "status_counts": {
+    "operating": 53034,
+    "closed": 6238,
+    "acquired": 5549,
+    "ipo": 1547
+  },
+  "founded_at_unparsed": 0,
+  "first_funding_at_unparsed": 0,
+  "last_funding_at_unparsed": 0,
+  "negative_funding_set_to_nan": 0,
+  "negative_age_set_to_nan": 763,
+  "country_groups": {
+    "USA": 8171,
+    "UNKNOWN": 1991,
+    "OTHER": 1177,
+    "GBR": 539,
+    "CAN": 395,
+    "ISR": 205,
+    "RUS": 183,
+    "FRA": 181,
+    "DEU": 181,
+    "CHN": 180,
+    "IND": 129
+  },
+  "split_counts": {
+    "test": {
+      "n": 1797,
+      "success_rate": 0.2677
+    },
+    "train": {
+      "n": 9614,
+      "success_rate": 0.5958
+    },
+    "val": {
+      "n": 1921,
+      "success_rate": 0.4612
+    }
+  },
+  "final_rows": 13332,
+  "output_csv": "crunchbase_clean.csv"
+}

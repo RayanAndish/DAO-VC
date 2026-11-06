@@ -1,0 +1,97 @@
+{
+  "protocol": "v2_validation_early_stopping",
+  "seed": 42,
+  "cohort": "venture_cohort_primary.csv",
+  "cohort_sha256": "60f76d84ab813ec76c3be05e3525e638c4680bf8600c05ecf47546d0af24b391",
+  "user_file": "user_behavior_clean.csv",
+  "user_sha256": "7a322fed6eb05063efa0944fde129a5f37c2496be4948f899bbf0b691eb74e2f",
+  "risk_model_test": {
+    "stop_epoch": 72,
+    "best_val_bce": 0.659086,
+    "default_rate_by_split": {
+      "test": 0.6238,
+      "train": 0.5192,
+      "val": 0.5955
+    },
+    "n": 1797,
+    "default_rate_test": 0.6238,
+    "auc_vs_label": 0.6394,
+    "auc_vs_label_ci95": [
+      0.6145,
+      0.6642
+    ],
+    "six_feature_bayes_proxy_auc": 0.6366,
+    "six_feature_bayes_proxy_ci95": [
+      0.6108,
+      0.664
+    ],
+    "gap_to_six_feature_proxy": -0.0028,
+    "oracle_with_observables_auc": 0.7792,
+    "brier_vs_label": 0.2294,
+    "brier_baseline_test_mean": 0.2347,
+    "mae_vs_truth": 0.184,
+    "calibration_deciles_vs_truth": [
+      {
+        "mean_pred": 0.2778,
+        "mean_truth": 0.3233,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.4112,
+        "mean_truth": 0.5221,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.4642,
+        "mean_truth": 0.592,
+        "n": 179
+      },
+      {
+        "mean_pred": 0.4989,
+        "mean_truth": 0.596,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.5286,
+        "mean_truth": 0.6251,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.5559,
+        "mean_truth": 0.6616,
+        "n": 179
+      },
+      {
+        "mean_pred": 0.584,
+        "mean_truth": 0.6914,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.6133,
+        "mean_truth": 0.7125,
+        "n": 179
+      },
+      {
+        "mean_pred": 0.6419,
+        "mean_truth": 0.7192,
+        "n": 180
+      },
+      {
+        "mean_pred": 0.6871,
+        "mean_truth": 0.7665,
+        "n": 180
+      }
+    ]
+  },
+  "anomaly_model_test": {
+    "stop_epoch": 250,
+    "n": 90000,
+    "bot_rate": 0.05,
+    "auc_vs_is_bot": 1.0,
+    "threshold_tau": 0.435854,
+    "threshold_quantile_honest_val": 0.99,
+    "detection_rate": 1.0,
+    "false_alarm_rate": 0.0104
+  },
+  "model_hash": "0x161e99ba912a4c98f45c8a186731a590951df3bbc82c0552be38b1139bbb134f"
+}

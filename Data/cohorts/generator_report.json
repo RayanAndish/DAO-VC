@@ -1,0 +1,567 @@
+{
+  "seed": 42,
+  "params": {
+    "gamma_venture_effect": 0.5,
+    "burn_base_usd": 12000.0,
+    "burn_age_coef": 0.25,
+    "burn_ncat_coef": 0.2,
+    "burn_log_sigma": 0.6,
+    "runway_median_months": 9.0,
+    "runway_log_sigma": 0.5,
+    "team_age_coef": 0.6,
+    "team_gamma_shape": 2.0,
+    "team_gamma_scale": 1.5,
+    "milestone_lambda_base": 3.0,
+    "milestone_ncat_coef": 0.2,
+    "milestone_age_coef": 0.1,
+    "milestone_min": 1,
+    "milestone_max": 12,
+    "prev_funding_intercept": -0.3,
+    "prev_funding_age_coef": 0.5,
+    "tam_median_usd": 1000000000.0,
+    "tam_ncat_coef": 0.2,
+    "tam_log_sigma": 1.0,
+    "score_weights": {
+      "z_log_burn": -0.6,
+      "z_log_requested": -0.4,
+      "z_team": 0.4,
+      "prev_funding": 0.2,
+      "z_log_tam": 0.1,
+      "z_log_burn_x_z_team": -0.3
+    }
+  },
+  "primary": "b46_n07",
+  "scenarios": [
+    {
+      "name": "b27_n03",
+      "base_success_target": 0.27,
+      "noise_sd": 0.3,
+      "default_rate": 0.7246,
+      "oracle_auc_all": 0.7191,
+      "oracle_auc_by_split": {
+        "train": 0.7045,
+        "val": 0.7319,
+        "test": 0.7512
+      },
+      "observable_only_auc": 0.6662,
+      "requested_integer_multiple_share": 0.000225,
+      "feature_stats": {
+        "burn_rate": {
+          "min": 992.5656,
+          "median": 11658.1956,
+          "max": 3993977.7035
+        },
+        "requested_amount": {
+          "min": 5543.6515,
+          "median": 106820.6632,
+          "max": 44486492.9903
+        },
+        "milestone_count": {
+          "min": 1.0,
+          "median": 3.0,
+          "max": 12.0
+        },
+        "team_experience": {
+          "min": 0.0741,
+          "median": 4.0242,
+          "max": 83.1487
+        },
+        "prev_funding": {
+          "min": 0.0,
+          "median": 0.0,
+          "max": 1.0
+        },
+        "tam": {
+          "min": 17967615.0948,
+          "median": 992564734.1072,
+          "max": 42119119252.0509
+        }
+      },
+      "label_correlations": {
+        "burn_rate": 0.0282,
+        "requested_amount": 0.0354,
+        "milestone_count": -0.024,
+        "team_experience": -0.1458,
+        "prev_funding": -0.0673,
+        "tam": -0.0014
+      },
+      "file": "venture_cohort_b27_n03.csv",
+      "sha256": "22fd69fce1af804ea57eaa6cef2ad89e5eb285dd2ca263dd5d15cc04ef51dd61",
+      "shift": -1.4987567934386772,
+      "success_rate_achieved": 0.27,
+      "primary": false
+    },
+    {
+      "name": "b27_n07",
+      "base_success_target": 0.27,
+      "noise_sd": 0.7,
+      "default_rate": 0.7306,
+      "oracle_auc_all": 0.7633,
+      "oracle_auc_by_split": {
+        "train": 0.7577,
+        "val": 0.7503,
+        "test": 0.7953
+      },
+      "observable_only_auc": 0.6618,
+      "requested_integer_multiple_share": 0.00015,
+      "feature_stats": {
+        "burn_rate": {
+          "min": 1277.3895,
+          "median": 11706.53,
+          "max": 2163982.2177
+        },
+        "requested_amount": {
+          "min": 5221.3892,
+          "median": 106065.4546,
+          "max": 13052310.965
+        },
+        "milestone_count": {
+          "min": 1.0,
+          "median": 3.0,
+          "max": 12.0
+        },
+        "team_experience": {
+          "min": 0.0576,
+          "median": 4.079,
+          "max": 80.1868
+        },
+        "prev_funding": {
+          "min": 0.0,
+          "median": 0.0,
+          "max": 1.0
+        },
+        "tam": {
+          "min": 19212508.669,
+          "median": 988265935.4212,
+          "max": 119250575612.0498
+        }
+      },
+      "label_correlations": {
+        "burn_rate": 0.0378,
+        "requested_amount": 0.056,
+        "milestone_count": -0.0275,
+        "team_experience": -0.1459,
+        "prev_funding": -0.0772,
+        "tam": 0.0028
+      },
+      "file": "venture_cohort_b27_n07.csv",
+      "sha256": "65d2aa476d82b49b2e3c53ae1191639e2c318639b6637d8b8e2c8f18be8ef688",
+      "shift": -1.568654481365292,
+      "success_rate_achieved": 0.26999999999999996,
+      "primary": false
+    },
+    {
+      "name": "b27_n12",
+      "base_success_target": 0.27,
+      "noise_sd": 1.2,
+      "default_rate": 0.733,
+      "oracle_auc_all": 0.8067,
+      "oracle_auc_by_split": {
+        "train": 0.7984,
+        "val": 0.8147,
+        "test": 0.8361
+      },
+      "observable_only_auc": 0.6471,
+      "requested_integer_multiple_share": 0.000225,
+      "feature_stats": {
+        "burn_rate": {
+          "min": 1117.1191,
+          "median": 11852.2739,
+          "max": 1521842.6924
+        },
+        "requested_amount": {
+          "min": 3954.1592,
+          "median": 106809.6314,
+          "max": 17078905.9294
+        },
+        "milestone_count": {
+          "min": 1.0,
+          "median": 3.0,
+          "max": 12.0
+        },
+        "team_experience": {
+          "min": 0.0066,
+          "median": 4.0388,
+          "max": 80.4918
+        },
+        "prev_funding": {
+          "min": 0.0,
+          "median": 0.0,
+          "max": 1.0
+        },
+        "tam": {
+          "min": 12168338.9657,
+          "median": 998023153.2928,
+          "max": 79791717343.2461
+        }
+      },
+      "label_correlations": {
+        "burn_rate": 0.0262,
+        "requested_amount": 0.0314,
+        "milestone_count": -0.0275,
+        "team_experience": -0.1477,
+        "prev_funding": -0.0335,
+        "tam": -0.0099
+      },
+      "file": "venture_cohort_b27_n12.csv",
+      "sha256": "9519b88b80a25bf40794c2185211d8e8ec293a93e5e22bc0edd774837824ea18",
+      "shift": -1.7307780297066517,
+      "success_rate_achieved": 0.26999999999999996,
+      "primary": false
+    },
+    {
+      "name": "b46_n03",
+      "base_success_target": 0.46,
+      "noise_sd": 0.3,
+      "default_rate": 0.544,
+      "oracle_auc_all": 0.7242,
+      "oracle_auc_by_split": {
+        "train": 0.7135,
+        "val": 0.737,
+        "test": 0.745
+      },
+      "observable_only_auc": 0.6715,
+      "requested_integer_multiple_share": 0.0003,
+      "feature_stats": {
+        "burn_rate": {
+          "min": 1056.3591,
+          "median": 11887.9847,
+          "max": 1198708.6602
+        },
+        "requested_amount": {
+          "min": 5437.7235,
+          "median": 107673.8531,
+          "max": 22407025.0216
+        },
+        "milestone_count": {
+          "min": 1.0,
+          "median": 3.0,
+          "max": 12.0
+        },
+        "team_experience": {
+          "min": 0.0666,
+          "median": 4.08,
+          "max": 87.6101
+        },
+        "prev_funding": {
+          "min": 0.0,
+          "median": 0.0,
+          "max": 1.0
+        },
+        "tam": {
+          "min": 18926778.7622,
+          "median": 999251251.3045,
+          "max": 51391594785.457
+        }
+      },
+      "label_correlations": {
+        "burn_rate": 0.0456,
+        "requested_amount": 0.0411,
+        "milestone_count": -0.0414,
+        "team_experience": -0.1518,
+        "prev_funding": -0.0659,
+        "tam": -0.0157
+      },
+      "file": "venture_cohort_b46_n03.csv",
+      "sha256": "f5e253acd316ec28092732febd31fa8e9e6c4f8320da3199a339b92674e25b40",
+      "shift": -0.5240480152746954,
+      "success_rate_achieved": 0.45999999999999996,
+      "primary": false
+    },
+    {
+      "name": "b46_n07",
+      "base_success_target": 0.46,
+      "noise_sd": 0.7,
+      "default_rate": 0.5443,
+      "oracle_auc_all": 0.7591,
+      "oracle_auc_by_split": {
+        "train": 0.7502,
+        "val": 0.7641,
+        "test": 0.7792
+      },
+      "observable_only_auc": 0.6503,
+      "requested_integer_multiple_share": 0.0003,
+      "feature_stats": {
+        "burn_rate": {
+          "min": 1044.1538,
+          "median": 11884.0198,
+          "max": 1155270.0603
+        },
+        "requested_amount": {
+          "min": 3641.104,
+          "median": 106772.1751,
+          "max": 20815294.8358
+        },
+        "milestone_count": {
+          "min": 1.0,
+          "median": 3.0,
+          "max": 12.0
+        },
+        "team_experience": {
+          "min": 0.0799,
+          "median": 4.0288,
+          "max": 80.1707
+        },
+        "prev_funding": {
+          "min": 0.0,
+          "median": 0.0,
+          "max": 1.0
+        },
+        "tam": {
+          "min": 8338179.7385,
+          "median": 995919114.2808,
+          "max": 54919725708.7772
+        }
+      },
+      "label_correlations": {
+        "burn_rate": 0.0614,
+        "requested_amount": 0.0611,
+        "milestone_count": -0.0249,
+        "team_experience": -0.1249,
+        "prev_funding": -0.0365,
+        "tam": -0.0044
+      },
+      "file": "venture_cohort_b46_n07.csv",
+      "sha256": "60f76d84ab813ec76c3be05e3525e638c4680bf8600c05ecf47546d0af24b391",
+      "shift": -0.5381219299365771,
+      "success_rate_achieved": 0.46,
+      "primary": true
+    },
+    {
+      "name": "b46_n12",
+      "base_success_target": 0.46,
+      "noise_sd": 1.2,
+      "default_rate": 0.5432,
+      "oracle_auc_all": 0.8076,
+      "oracle_auc_by_split": {
+        "train": 0.8035,
+        "val": 0.8128,
+        "test": 0.8169
+      },
+      "observable_only_auc": 0.6344,
+      "requested_integer_multiple_share": 0.0003,
+      "feature_stats": {
+        "burn_rate": {
+          "min": 1216.7137,
+          "median": 11685.7001,
+          "max": 848461.6894
+        },
+        "requested_amount": {
+          "min": 4143.3384,
+          "median": 105678.0934,
+          "max": 10071187.8305
+        },
+        "milestone_count": {
+          "min": 1.0,
+          "median": 3.0,
+          "max": 12.0
+        },
+        "team_experience": {
+          "min": 0.1183,
+          "median": 4.0571,
+          "max": 81.394
+        },
+        "prev_funding": {
+          "min": 0.0,
+          "median": 0.0,
+          "max": 1.0
+        },
+        "tam": {
+          "min": 5695899.8713,
+          "median": 994503594.5968,
+          "max": 155297126264.7595
+        }
+      },
+      "label_correlations": {
+        "burn_rate": 0.0617,
+        "requested_amount": 0.0668,
+        "milestone_count": 0.0008,
+        "team_experience": -0.1127,
+        "prev_funding": -0.0535,
+        "tam": -0.008
+      },
+      "file": "venture_cohort_b46_n12.csv",
+      "sha256": "0e2bd9a4a6eb0cf541155c6653a5fadd2d7bc7a1dcd40ca7fe10f145d6c7bb9a",
+      "shift": -0.559603216081981,
+      "success_rate_achieved": 0.45999999999999996,
+      "primary": false
+    },
+    {
+      "name": "b60_n03",
+      "base_success_target": 0.6,
+      "noise_sd": 0.3,
+      "default_rate": 0.3925,
+      "oracle_auc_all": 0.714,
+      "oracle_auc_by_split": {
+        "train": 0.7092,
+        "val": 0.711,
+        "test": 0.7146
+      },
+      "observable_only_auc": 0.6619,
+      "requested_integer_multiple_share": 7.5e-05,
+      "feature_stats": {
+        "burn_rate": {
+          "min": 1218.2291,
+          "median": 11705.619,
+          "max": 741859.4717
+        },
+        "requested_amount": {
+          "min": 7121.0218,
+          "median": 105928.8626,
+          "max": 7596387.5843
+        },
+        "milestone_count": {
+          "min": 1.0,
+          "median": 3.0,
+          "max": 12.0
+        },
+        "team_experience": {
+          "min": 0.0968,
+          "median": 4.0438,
+          "max": 82.3622
+        },
+        "prev_funding": {
+          "min": 0.0,
+          "median": 0.0,
+          "max": 1.0
+        },
+        "tam": {
+          "min": 22933770.6924,
+          "median": 994033852.3774,
+          "max": 40150121543.2501
+        }
+      },
+      "label_correlations": {
+        "burn_rate": 0.0747,
+        "requested_amount": 0.0765,
+        "milestone_count": -0.0184,
+        "team_experience": -0.1142,
+        "prev_funding": -0.0456,
+        "tam": -0.0042
+      },
+      "file": "venture_cohort_b60_n03.csv",
+      "sha256": "3ea7a18d6f5779c5ad4235dcc24720181299bf800623683caac6bd6fc4611c07",
+      "shift": 0.13512451210803533,
+      "success_rate_achieved": 0.6,
+      "primary": false
+    },
+    {
+      "name": "b60_n07",
+      "base_success_target": 0.6,
+      "noise_sd": 0.7,
+      "default_rate": 0.4019,
+      "oracle_auc_all": 0.7584,
+      "oracle_auc_by_split": {
+        "train": 0.7473,
+        "val": 0.7708,
+        "test": 0.7709
+      },
+      "observable_only_auc": 0.6624,
+      "requested_integer_multiple_share": 0.0003,
+      "feature_stats": {
+        "burn_rate": {
+          "min": 1034.1072,
+          "median": 11777.5844,
+          "max": 2272228.7062
+        },
+        "requested_amount": {
+          "min": 4063.8284,
+          "median": 106327.1781,
+          "max": 17895456.1166
+        },
+        "milestone_count": {
+          "min": 1.0,
+          "median": 3.0,
+          "max": 12.0
+        },
+        "team_experience": {
+          "min": 0.1199,
+          "median": 4.0207,
+          "max": 86.3784
+        },
+        "prev_funding": {
+          "min": 0.0,
+          "median": 0.0,
+          "max": 1.0
+        },
+        "tam": {
+          "min": 16132983.5979,
+          "median": 994972250.9697,
+          "max": 75352498930.1051
+        }
+      },
+      "label_correlations": {
+        "burn_rate": 0.0465,
+        "requested_amount": 0.0533,
+        "milestone_count": -0.0005,
+        "team_experience": -0.1191,
+        "prev_funding": -0.0334,
+        "tam": -0.0058
+      },
+      "file": "venture_cohort_b60_n07.csv",
+      "sha256": "4af76b3869d3ed5f9e186a98cea7347c18ef5314de312b2a82913d7ba29cf26b",
+      "shift": 0.16566013173473026,
+      "success_rate_achieved": 0.5999999999999999,
+      "primary": false
+    },
+    {
+      "name": "b60_n12",
+      "base_success_target": 0.6,
+      "noise_sd": 1.2,
+      "default_rate": 0.3933,
+      "oracle_auc_all": 0.8106,
+      "oracle_auc_by_split": {
+        "train": 0.8052,
+        "val": 0.8229,
+        "test": 0.8182
+      },
+      "observable_only_auc": 0.6395,
+      "requested_integer_multiple_share": 0.000225,
+      "feature_stats": {
+        "burn_rate": {
+          "min": 1091.0374,
+          "median": 11822.7929,
+          "max": 1480805.2951
+        },
+        "requested_amount": {
+          "min": 4365.6479,
+          "median": 106398.2845,
+          "max": 11536803.5523
+        },
+        "milestone_count": {
+          "min": 1.0,
+          "median": 3.0,
+          "max": 12.0
+        },
+        "team_experience": {
+          "min": 0.0262,
+          "median": 4.1133,
+          "max": 83.6464
+        },
+        "prev_funding": {
+          "min": 0.0,
+          "median": 0.0,
+          "max": 1.0
+        },
+        "tam": {
+          "min": 22449820.8341,
+          "median": 1006001928.7055,
+          "max": 49176447700.9113
+        }
+      },
+      "label_correlations": {
+        "burn_rate": 0.0436,
+        "requested_amount": 0.0495,
+        "milestone_count": -0.0116,
+        "team_experience": -0.1029,
+        "prev_funding": -0.0434,
+        "tam": -0.0128
+      },
+      "file": "venture_cohort_b60_n12.csv",
+      "sha256": "2f4e843e1c65f18e447a1636a9e6af43bc895b5d2f68d078aff3b56f43d04dd1",
+      "shift": 0.2164887182711664,
+      "success_rate_achieved": 0.5999999999999999,
+      "primary": false
+    }
+  ]
+}
