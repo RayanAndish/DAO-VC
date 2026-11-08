@@ -1,315 +1,306 @@
-# AIPoX: A Hybrid Consensus and Governance Framework for Secure and Meritocratic Capital Allocation in Venture DAOs
+# AIPoX: A Hybrid Consensus and Governance Protocol for Secure and Meritocratic Capital Allocation in Venture DAOs
 
-[![Solidity](https://img.shields.io/badge/Solidity-^0.8.19-363636?logo=solidity)](https://soliditylang.org/)
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.14-blue?logo=python)](https://www.python.org/)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.19-363636?logo=solidity)](https://soliditylang.org/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)
 [![EVM](https://img.shields.io/badge/EVM-Ganache%20Compatible-orange?logo=ethereum)](https://trufflesuite.com/ganache/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Official research repository containing the end-to-end implementation, Solidity smart contracts, off-chain machine learning pipelines, empirical benchmark datasets, and on-chain verification artifacts for **AIPoX** (*Artificial Intelligence Proof of X*).
+Official research repository for **AIPoX** (*Artificial Intelligence Proof of X*). It contains the Solidity contracts, the off-chain machine-learning pipeline, the simulated benchmark data, the on-chain verification scripts and the results reported in the manuscript.
+
+> **Scope.** AIPoX is evaluated in a controlled simulation. The venture cohort is synthetic, the telemetry is simulated, and the on-chain experiments run on a single-node Ganache EVM. The repository does not evaluate distributed validator agreement, finality or Byzantine network behavior.
 
 ---
 
 ## Table of Contents
-- [1. Architectural Overview](#1-architectural-overview)
-- [2. System Architecture & Diagrams](#2-system-architecture--diagrams)
-- [3. Core Mathematical Formulations](#3-core-mathematical-formulations)
-- [4. Repository Directory Structure](#4-repository-directory-structure)
-- [5. Empirical Benchmark Datasets](#5-empirical-benchmark-datasets)
-- [6. Step-by-Step Reproduction Guide](#6-step-by-step-reproduction-guide)
-- [7. On-Chain Verification & Experimental Results](#7-on-chain-verification--experimental-results)
-- [8. Citation & Academic Inquiries](#8-citation--academic-inquiries)
+
+- [1. Overview](#1-overview)
+- [2. Architecture](#2-architecture)
+- [3. Core Formulations](#3-core-formulations)
+- [4. Repository Structure](#4-repository-structure)
+- [5. Data](#5-data)
+- [6. Reproduction](#6-reproduction)
+- [7. Results Summary](#7-results-summary)
+- [8. Citation](#8-citation)
 
 ---
 
-## 1. Architectural Overview
+## 1. Overview
 
-AIPoX establishes an authenticated hierarchical consensus and governance framework designed to resolve the structural vulnerabilities of plutocratic token concentration, lack of predictive venture due-diligence, and single-oracle manipulation in venture capital DAOs (DAO-VCs).
+AIPoX combines four layers to address plutocratic token concentration, weak venture due diligence and single-oracle manipulation in venture DAOs.
 
-The protocol is partitioned across four operational layers:
-1. **Layer 1 (Consensus Substrate):** Modified Proof of Authority (PoA) operating on time-locked bonded collateral ($B_i$) deposited in escrow contracts, ensuring rapid, deterministic block finality and continuous anomaly slashing.
-2. **Layer 2 (Meritocratic Governance):** Dual-variable convex governance formulation synthesizing normalized token stake ($\bar{T}_u$) with verified historical Proof of Participation ($\bar{P}_u$), systematically breaking the linear link between capital volume and voting power.
-3. **Off-Chain AI Meta-Layer:** A dual-stream machine learning pipeline comprising an unsupervised telemetry Autoencoder ($B(u)$) for validator behavior oversight and a deep neural network ($R(p)$) for startup solvency prediction.
-4. **Attestation & Settlement Layer:** Decentralized $(k\text{-of-}M)$ threshold ECDSA signature verification committing authentic model weights ($ModelHash$) on-chain, coupled with a deterministic macro-treasury allocation rule derived from the Bayesian odds of venture solvency.
+1. **Consensus substrate.** A Proof-of-Authority (PoA) validator set. Validators post a bond $B_i$ in escrow, and the bond is slashed when a validator's behavior score crosses a threshold.
+2. **Meritocratic governance.** The voting weight combines normalized token stake $\bar{T}_u$ with normalized participation $\bar{P}_u$, so capital volume alone does not determine the outcome.
+3. **Off-chain AI meta-layer.** An autoencoder $B(u)$ scores telemetry anomalies. A neural network $R(p)$ estimates the default risk of a venture proposal.
+4. **Attestation and settlement.** A $k$-of-$M$ ECDSA committee signs a digest that binds the proposal, the risk score and the approved model hash. A risk-odds rule then allocates the treasury.
 
 ---
 
-## 2. System Architecture & Diagrams
+## 2. Architecture
 
-### Figure 1 | End-to-End Operational Architecture and Data Flow
+### Figure 1 | End-to-end operational architecture
+
 <p align="center">
-  <img src="figures/Figure_1_Operational_Architecture.svg" width="100%" alt="Figure 1: AIPoX Operational Architecture">
+  <img src="figures/Figure_1_Operational_Architecture.svg" width="100%" alt="Figure 1: AIPoX operational architecture">
+</p>
+
+### Figure 3 | Dual-stream AI layer and inference pipeline
+
+<p align="center">
+  <img src="figures/Figure_3_AI_Layer.svg" width="100%" alt="Figure 3: AI layer and inference pipeline">
+</p>
+
+### Figure 4 | Governance workflow
+
+<p align="center">
+  <img src="figures/Figure_4_Governance_Workflow.svg" width="100%" alt="Figure 4: Governance workflow">
 </p>
 
 ---
 
-### Figure 3 | Dual-Stream AI Meta-Layer & Inference Pipeline
-<p align="center">
-  <img src="figures/Figure_3_AI_Dual_Stream_Pipeline.svg" width="100%" alt="Figure 3: AI Inference Pipeline">
-</p>
+## 3. Core Formulations
+
+Equation numbers follow the manuscript.
+
+### 3.1 Validator selection (Eq. 1)
+
+$$
+P_{\text{PoA}}(i) = \frac{B_i}{\sum_{j=1}^{n} B_j} \qquad \text{subject to } B_i \ge B_{\min}
+$$
+
+### 3.2 Participation and normalization (Eq. 2)
+
+$$
+\bar{T}_u = \frac{T_{u}}{\sum_{k \in \mathcal{U}} T_{k}}, \qquad \bar{P}_u = \frac{P_{u}}{\sum_{k \in \mathcal{U}} P_{k}}, \qquad \sum_{u \in \mathcal{U}} \bar{T}_u = \sum_{u \in \mathcal{U}} \bar{P}_u = 1
+$$
+
+### 3.3 Composite voting weight (Eq. 3)
+
+$$
+w_u = \alpha \, \bar{T}_u + \beta \, \bar{P}_u, \qquad \alpha = 0.4, \quad \beta = 0.6
+$$
+
+### 3.4 Proposal score (Eq. 4)
+
+$$
+V(p) = \alpha \sum_{u \in \mathcal{V}_p} T_{u} + \beta \, T_{\text{active}} \sum_{u \in \mathcal{V}_p} \bar{P}_u
+$$
+
+### 3.5 Telemetry anomaly score (Eq. 5)
+
+$$
+B(u) = \min\left(1, \tfrac{1}{8}\lVert z_u - \hat{z}_u \rVert^2\right), \qquad z_u \in \mathbb{R}^8
+$$
+
+### 3.6 Venture risk network (Eqs. 6–8)
+
+$$
+h_1 = \mathrm{ReLU}(W_1 X_p + b_1), \qquad h_2 = \mathrm{ReLU}(W_2 \, \mathrm{Dropout}(h_1) + b_2), \qquad R(p) = \sigma(W_3 h_2 + b_3)
+$$
+
+with $X_p \in \mathbb{R}^6$ and architecture $6 \to 32 \to 16 \to 1$.
+
+### 3.7 Attestation digest (Eq. 9)
+
+$$
+\Gamma_p = \text{Keccak-256}\big(\text{contract} \parallel \text{chainId} \parallel pid \parallel \text{epoch} \parallel \text{nonce} \parallel \text{ModelHash} \parallel \text{riskScaled}\big)
+$$
+
+### 3.8 Freshness (Eq. 10)
+
+$$
+\text{BlockNumber}_{\text{current}} - \text{BlockNumber}_{\text{attested}} \le \Delta_{\text{validity}}
+$$
+
+### 3.9 Ejection and slashing (Eqs. 11–12)
+
+Ejection occurs when
+
+$$
+10000 \cdot B(u) \ge 4359 \qquad (\tau = 0.435854)
+$$
+
+Slashing is applied only when $B(u) \ge \tau$:
+
+$$
+B_i^{\text{new}} = (1 - B(u)) \cdot B_i^{\text{old}}
+$$
+
+### 3.10 Treasury allocation (Eqs. 13–15)
+
+$$
+W(p) = V(p)\,\frac{1 - R(p)}{R(p)}, \qquad A(p) = \min\left(\Omega_{\max}\, T_{\text{pool}},\; \lambda^{*} \, W(p)\right), \qquad \sum_{p} A(p) = T_{\text{pool}}
+$$
+
+### 3.11 Milestone tranches (Eq. 16)
+
+$$
+I(p, t) = A(p) \cdot \mu_t \cdot S(p, t), \qquad S(p, t) \in [0, 1]
+$$
+
+The milestone oracle $S(p, t)$ is specified but not evaluated in this work.
+
+### 3.12 Plutocratic resistance (Proposition 1, Eqs. 17–18)
+
+Under unanimous community voting, the community outvotes a whale with capital share $c$ if
+
+$$
+\beta > \beta^{*}(c) = \frac{2c - 1}{(2c - 1) + (\bar{P}_c - \bar{P}_w)}
+$$
+
+For $k = 1$ and $P = 0.28$, $\beta^{*}(0.6) = 0.167$.
 
 ---
 
-### Figure 4 | Closed-Loop Five-Phase Governance Lifecycle
-<p align="center">
-  <img src="figures/Figure_4_Governance_Lifecycle.svg" width="100%" alt="Figure 4: Governance Lifecycle">
-</p>
-
----
-
-## 3. Core Mathematical Formulations
-
-### 3.1. Validator Collateral & Slashing (Equations 1 & 11)
-To eliminate Sybil generation at the consensus tier, validators deposit a time-locked security bond ($B_i$) into escrow. Selection probability is proportional to bonded stake:
-
-$$
-P_{\text{PoA}}(i) = \frac{B_i}{\sum_{j=1}^{n} B_j} \quad \text{subject to } B_i \ge B_{\text{min}}
-$$
-
-If a validator exhibits Byzantine delays or collusive message withholding ($B(u) > \tau_{\text{Anomaly}}$), its bonded collateral is programmatically slashed:
-
-$$
-B_i^{(\text{new})} = B_i^{(\text{old})} \times (1 - AI_{\text{Anomaly}, i})
-$$
-
----
-
-### 3.2. Meritocratic Governance Formulation (Equations 3, 4, 4a)
-For each active participant $u \in \mathcal{U}$, historical engagement is scored via normalized voting frequency $V_u$, proposal generation $C_u$, and approval ratio $A_u$:
-
-$$
-P_{\text{score}, u} = (W_v \times V_u) + (W_c \times C_u) + (W_a \times A_u) \quad \text{with } W_v + W_c + W_a = 1
-$$
-
-To prevent wealth concentration while preserving capital alignment, token balances $T_u$ and participation scores $P_{\text{score}, u}$ are normalized across the active electorate:
-
-$$
-\bar{T}_u = \frac{T_{\text{tokens}, u}}{\sum_{k \in \mathcal{U}} T_{\text{tokens}, k}}, \quad \bar{P}_u = \frac{P_{\text{score}, u}}{\sum_{k \in \mathcal{U}} P_{\text{score}, k}} \quad \text{such that } \sum_{u \in \mathcal{U}} \bar{T}_u = 1, \; \sum_{u \in \mathcal{U}} \bar{P}_u = 1
-$$
-
-Composite voting weight $w_u$ is defined as a convex combination ($\alpha = 0.4, \beta = 0.6$):
-
-$$
-w_u = \alpha \cdot \bar{T}_u + \beta \cdot \bar{P}_u \quad \text{subject to } \alpha + \beta = 1, \; \beta > \alpha
-$$
-
-Aggregate affirmative votes accrued by proposal $p$ from supporting voters $\mathcal{V}_p \subseteq \mathcal{U}$ are tallied in token-denominated units:
-
-$$
-V(p) = T_{\text{active}} \times \sum_{u \in \mathcal{V}_p} w_u = \alpha \sum_{u \in \mathcal{V}_p} T_{\text{tokens}, u} + \beta \cdot T_{\text{active}} \sum_{u \in \mathcal{V}_p} \bar{P}_u
-$$
-
----
-
-### 3.3. Threshold Attestation Protocol (Equations 7 & 7a)
-Off-chain inference outputs are committed to the distributed ledger via a $(k\text{-of-}M)$ threshold signature scheme ($k = \lceil 2M/3 \rceil$). Each validator signs the Keccak-256 digest:
-
-$$
-\Gamma_p = \text{Keccak-256}(ProposalID \parallel R(p) \parallel Epoch \parallel Nonce \parallel ModelHash)
-$$
-
-The smart contract verifies ECDSA public keys and enforces temporal freshness:
-
-$$
-BlockHeight_{\text{current}} - Epoch_{\text{attested}} \le \Delta_{\text{validity}}
-$$
-
----
-
-### 3.4. Bayesian Odds Macro-Allocation Rule (Equation 8)
-Let $R(p) \in (0, 1)$ be the neural network default risk score. The Bayesian Odds Ratio of venture solvency is $\mathcal{O}(p) = \frac{1 - R(p)}{R(p)}$. The competitive treasury pool ($T_{\text{pool}} = \$1,000,000$) is distributed as:
-
-$$
-A_{\text{target}}(p) = T_{\text{pool}} \times \frac{V(p) \cdot \left(\frac{1 - R(p)}{R(p)}\right)}{\sum_{j \in \mathcal{P}_{\text{approved}}} \left[ V(j) \cdot \left(\frac{1 - R(j)}{R(j)}\right) \right]}
-$$
-
-Milestone-gated tranche disbursements are governed by progress deliverable $S(p,t) \in [0, 1]$:
-
-$$
-I(p, t) = A_{\text{target}}(p) \times \mu_t \times S(p, t)
-$$
-
----
-
-### 3.5. Plutocratic Resistance Bound (Theorem 1, Equation 14)
-For a capital concentration $c \in (0.5, 1.0)$ commanded by a whale with participation share $\bar{P}_w$, and an honest community commanding $(1 - c)$ with participation $\bar{P}_c = 1 - \bar{P}_w$ and vote concentration $\gamma \in (0, 1]$, the community outvotes the whale if and only if:
-
-$$
-\beta > \beta^*(\gamma, c) = \frac{c - \gamma (1 - c)}{[c - \gamma (1 - c)] + [\gamma \bar{P}_c - \bar{P}_w]}
-$$
-
----
-
-## 4. Repository Directory Structure
+## 4. Repository Structure
 
 ```text
 DAO-VC-AIPoX/
-├── 1_deploy_and_run_onchain.py     # Deploys contracts, casts 1,000 on-chain votes, runs allocation
-├── 2_generate_verified_tables.py   # Processes on-chain logs; outputs Tables 3, 4, 5, 6, 7, 8
-├── 3_plot_publication_figures.py   # Generates Figures 4, 5, and 6
-├── run_pipeline.py                 # Master one-click automated reproduction runner
-├── deployment_info.json            # On-chain contract addresses and block numbers
-├── OnChain_Extracted_Table_4.csv   # Raw blockchain event logs for treasury allocation
-├── OnChain_Proposal_State_Raw.csv  # Raw on-chain proposal states from EVM storage
-│
+├── 1_deploy_and_run_onchain.py      # Deploys contracts, runs the on-chain test suite, votes, attestations, allocation
+├── 2_generate_verified_tables.py    # Builds Tables 3, 4, 5, 6, 7, 7b, 7c, 8, 8b from on-chain logs
+├── 3_plot_publication_figures.py    # Builds Figures 5, 6 and 7
+├── run_pipeline.py                  # Runs the full pipeline in order
 ├── Contracts/
-│   ├── InvestmentSmartContract.sol # Main voting, attestation, Bayesian allocation, tranche gating
-│   └── PoAValidatorEscrow.sol      # Validator bonded collateral deposit and anomaly slashing
-│
+│   ├── InvestmentSmartContract.sol  # Voting, attestation, risk-odds allocation, milestone tranches
+│   └── PoAValidatorEscrow.sol       # Validator bonds, unbonding, attested slashing
+├── Data/
+│   ├── 3_train_models.py            # Trains R(p) and B(u) (protocol v2, seed 42)
+│   ├── fig2_roc.py                  # Builds Figure 2 from the saved models; refuses to write if metrics differ from train_report.json
+│   ├── 06_score_proposals.py        # Selects P-1 ... P-5 from the held-out test split
+│   ├── cohorts/
+│   │   └── venture_cohort_primary.csv   # Synthetic venture cohort with split column
+│   ├── user_behavior_clean.csv      # Cleaned simulated telemetry (600,000 rows)
+│   ├── big_startup_secsees_dataset.csv  # Crunchbase venture records (66,368 raw)
+│   └── models/
+│       ├── venture_risk_dnn.pt      # R(p) weights
+│       ├── telemetry_autoencoder.pt # B(u) weights
+│       ├── scalers.joblib           # Feature scalers and protocol metadata
+│       ├── threshold.json           # tau and threshold_bps
+│       ├── model_hash.json          # ModelHash committed on-chain
+│       └── train_report.json        # Training and test metrics
 ├── figures/
-│   ├── Figure_1_Operational_Architecture.svg # Layered architectural data flow
-│   ├── Figure_3_AI_Dual_Stream_Pipeline.svg  # Dual-stream AI gating pipeline
-│   └── Figure_4_Governance_Lifecycle.svg     # Closed-loop 5-phase governance workflow
-│
-└── Data/
-    ├── 1_train_models.py           # Trains DNN and Autoencoder on 500k/600k datasets; generates ModelHash
-    ├── 2_evaluate_test_metrics.py  # Evaluates held-out test sets; outputs Table 2b and Figure 7
-    ├── 3_score_proposals.py        # Centile-stratified extraction of P-1...P-5 from financial dataset
-    ├── financial_dataset.csv       # 500,000 empirical financial records
-    ├── user_behavior_dataset.csv   # 600,000 node interaction telemetry logs
-    ├── big_startup_secsees_dataset.csv # 66,368 Crunchbase venture records
-    ├── training_data.csv           # 12,248 curated structured calibration samples
-    │
-    └── models/
-        ├── venture_risk_dnn.joblib     # Serialized Risk DNN checkpoint
-        ├── telemetry_autoencoder.joblib # Serialized Anomaly Autoencoder checkpoint
-        ├── scalers.joblib              # StandardScaler artifacts
-        └── model_hash.json             # On-chain committed ModelHash
+│   ├── Figure_1_Operational_Architecture.svg
+│   ├── Figure_2_ROC_AI_Meta_Layer.png
+│   ├── Figure_3_AI_Layer.svg
+│   ├── Figure_4_Governance_Workflow.svg
+│   ├── Figure_5_Treasury_Reallocation.png
+│   ├── Figure_6_Ablation_Decomposition.png
+│   └── Figure_7_Whale_Fragmentation.png
+└── Results.md                       # Full result tables and on-chain logs
 ```
 
 ---
 
-## 5. Empirical Benchmark Datasets
+## 5. Data
 
-All empirical corpora are archived within the `Data/` directory:
+| Dataset | Records | Use | Notes |
+| :--- | ---: | :--- | :--- |
+| Crunchbase venture records (`big_startup_secsees_dataset.csv`) | 66,368 raw; 13,332 cleaned | Calibration checks only | Real records. They are not used as labels for $R(p)$. |
+| Synthetic venture cohort (`cohorts/venture_cohort_primary.csv`) | Test split $n = 1{,}797$ | Training and evaluation of $R(p)$ | Generated by the procedure in the manuscript. Not empirical venture outcomes. |
+| Simulated telemetry (`user_behavior_clean.csv`) | 600,000 (test $n = 90{,}000$, 5% bots) | Training and evaluation of $B(u)$ | Simulated. Features: transaction count, balance, gas, latency, entropy, packet drop, clustering, uptime. |
 
-| Dataset Name | Record Count | Features | Target Label | Description |
-| :--- | :---: | :---: | :--- | :--- |
-| **`financial_dataset.csv`** | 500,000 | 6 financial attributes | `is_successful` (0: Default, 1: Solvent) | Startup burn rates, TAM, funding, and milestones across venture cycles. |
-| **`user_behavior_dataset.csv`** | 600,000 | 3 telemetry metrics | `is_bot` (0: Honest, 1: Anomaly/Sybil) | On-chain interaction traces: transaction count, balance, and gas consumption. |
-| **`big_startup_secsees_dataset.csv`** | 66,368 | 14 ecosystem features | `status` (operating, closed, acquired) | Real-world Crunchbase startup financing database. |
-| **`training_data.csv`** | 12,248 | 5 structured attributes | `is_successful` (0/1) | Curated calibration partition for supervised training benchmarking. |
+Splits are 70/15/15 with seed 42. The honest validation rows set the threshold $\tau$.
 
 ---
 
-## 6. Step-by-Step Reproduction Guide
+## 6. Reproduction
 
 ### Prerequisites
-- Python 3.10+
-- Ganache (Local EVM node running at `http://172.16.22.120:8545` or `http://127.0.0.1:8545`)
+
+- Python 3.10 or later
+- Ganache running at `http://172.16.22.120:8545` or `http://127.0.0.1:8545`
+- `solc` 0.8.19 (installed automatically by `py-solc-x`)
 
 ### Installation
-```bash
-git clone https://github.com/anonymous-submission/DAO-VC-AIPoX.git
-cd DAO-VC-AIPoX
 
-pip install web3 py-solc-x pandas numpy matplotlib seaborn scikit-learn joblib eth-account
+```bash
+git clone <REPOSITORY_URL>
+cd DAO-VC-AIPoX
+pip install web3 py-solc-x pandas numpy matplotlib scikit-learn joblib eth-account torch
 ```
 
-### Master One-Click Pipeline Execution
-To execute the complete end-to-end pipeline (training neural models, extracting genuine proposals, executing 1,000 on-chain transactions on Ganache, generating all tables, and plotting publication figures):
+### Full pipeline
 
 ```bash
 python run_pipeline.py
 ```
 
-### Modular Step-by-Step Execution
+### Step by step
 
-#### Stage 1: Train & Validate Off-Chain AI Models
 ```bash
+# 1. Train the off-chain models (writes Data/models/)
 cd Data
-python 1_train_models.py
-python 2_evaluate_test_metrics.py
-python 3_score_proposals.py
+python 3_train_models.py
+
+# 2. Build Figure 2 from the saved models (checks metrics against train_report.json)
+python fig2_roc.py
+
+# 3. Select and score the five proposals
+python 06_score_proposals.py
 cd ..
-```
-*Outputs:* `models/model_hash.json`, `Table_2b_AI_Validation_Metrics.csv`, `Figure_7_AI_Anomaly_and_Risk_ROC.png`, `Table_Proposals_Feature_Profiles.csv`.
 
-#### Stage 2: Deploy & Execute 1,000 On-Chain Transactions
-```bash
+# 4. Deploy the contracts and run the on-chain suite
 python 1_deploy_and_run_onchain.py
-```
-*Outputs:* Confirms 1,000 votes on Ganache, triggers ECDSA attestation with `ModelHash`, executes Bayesian allocation, outputs `OnChain_Extracted_Table_4.csv` and `Table_5_1_Empirical_Scalability.csv`.
 
-#### Stage 3: Generate Verified Manuscript Tables
-```bash
+# 5. Build the verified tables from the on-chain outputs
 python 2_generate_verified_tables.py
-```
-*Outputs:* `Table_3_Comparative_Prioritization.csv`, `Table_4_Treasury_Allocation.csv`, `Table_5_Ablation_Study.csv`, `Table_6_Sybil_Attack.csv`, `Table_7_Whale_Prioritization.csv`, `Table_8_Whale_Treasury_Distortion.csv`.
 
-#### Stage 4: Plot High-Resolution Publication Figures
-```bash
+# 6. Build Figures 5, 6 and 7
 python 3_plot_publication_figures.py
 ```
-*Outputs:* `Figure_4_Treasury_Reallocation.png`, `Figure_5_Ablation_Decomposition.png`, `Figure_6_Empirical_Blockchain_Scalability.png`.
+
+Step 2 stops with an error if the recomputed AUC, sample sizes, TPR or FPR differ from `train_report.json` by more than $5 \times 10^{-5}$.
 
 ---
 
-## 7. On-Chain Verification & Experimental Results
+## 7. Results Summary
 
-### Table 2b | Empirical AI Validation Metrics (Held-Out Test Set)
-| Model Component | Target Label | Input Dimension | Test ROC-AUC | TPR (Recall) | FPR (False Alarm) | Calibration Metric |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Anomaly Autoencoder ($B(u)$)** | `is_bot` (0/1) | $z_u \in \mathbb{R}^3$ | **0.9921** | **100.00%** | **1.61%** | $\tau_{\text{norm}} = 0.000102$ |
-| **Venture Risk DNN ($R(p)$)** | `is_successful` (0/1) | $X_p \in \mathbb{R}^6$ | **0.9395** | **69.27%** | **6.16%** | Brier Score = **0.0795** |
+All numbers come from the final pipeline run. The complete tables and on-chain logs are in [`Results.md`](Results.md).
 
-### Table 4 | Verified On-Chain Treasury Allocation Outcomes ($1,000,000 Pool)
-| Proposal ID | AI Risk $R(p)$ | Traditional Allocation (USD) | AIPoX Allocation (USD) | Net Allocation Delta |
-| :---: | :---: | :---: | :---: | :---: |
-| **P-3** | **0.06** | $156,720.16 | **$737,931.23** | **+370.86% (4.71x)** |
-| **P-5** | **0.39** | $260,011.46 | $79,494.46 | -69.43% |
-| **P-1** | **0.35** | $128,220.62 | $69,469.97 | -45.82% |
-| **P-4** | **0.46** | $222,819.60 | $59,791.62 | -73.17% |
-| **P-2** | **0.49** | $232,228.15 | $53,312.72 | -77.04% |
-| **Total** | — | **$1,000,000.00** | **$1,000,000.00** | — |
+### AI meta-layer (held-out test set)
 
-### Table 5 | Four-Way Ablation Analysis (Isolating PoP vs. AI Risk Gate)
-| Architecture Variant | P-3 Allocation ($) | P-2 Allocation ($) | P-3 Rank | P-2 Rank | P-3 Net Gain |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **1. Token-Only (Traditional dPoS)** | $156,720.16 | $232,228.15 | 4 | 2 | Baseline (0.0%) |
-| **2. Token + PoP (No AI Risk Gate)** | $198,333.47 | $215,681.81 | 4 | 1 | **+26.55%** |
-| **3. Token + AI Gate (No PoP)** | $681,385.30 | $67,078.02 | 1 | 4 | **+334.78%** |
-| **4. Full AIPoX (PoP + AI Gate)** | **$737,931.23** | **$53,312.72** | **1** | **5** | **+370.86%** |
+| Model | Input | Test $n$ | ROC-AUC | Notes |
+| :--- | :---: | ---: | :---: | :--- |
+| Telemetry autoencoder $B(u)$ | $z_u \in \mathbb{R}^8$ | 90,000 | **1.0000** | Simulated bot traffic. TPR at $\tau$ = 100%, FPR = 1.04% |
+| Venture risk DNN $R(p)$ | $X_p \in \mathbb{R}^6$ | 1,797 | **0.6394** | 95% CI [0.6145, 0.6642]. Brier = 0.2294 (baseline 0.2347) |
 
-### Table 6 | Sybil Assault Robustness (1,500 Nodes, 1,500,000 Token Budget Targeting P-4)
-| Proposal ID | Traditional Rank (Under Attack) | AIPoX Rank (Under Attack) | Post-Attack Allocation (USD) | Security Status |
-| :---: | :---: | :---: | :---: | :---: |
-| **P-3** | 4 | **1 (Preserved)** | **$728,147.97** | Top disbursement strictly protected |
-| **P-5** | 2 | 2 | $78,440.55 | Rank preserved |
-| **P-4 (Target)** | **1 (Compromised)** | **3 (Attack Contained)** | **$72,256.58** | **Governance capture defeated** |
-| **P-1** | 5 | 4 | $68,548.97 | Rank preserved |
-| **P-2** | 3 | 5 | $52,605.92 | Rank preserved |
+### Treasury allocation ($1,000,000 pool)
 
-### Table 8 | 60% Whale Attack Distortion (Monopoly Targeting P-2)
-| Proposal ID | Pre-Attack Allocation | Post-Attack Allocation | Net Distortion |
-| :---: | :---: | :---: | :---: |
-| **P-3** | $737,931.23 | **$632,333.74** | **-14.31%** (Maintains 63.2% of treasury) |
-| **P-2 (Target)** | $53,312.72 | **$188,783.04** | **+254.11%** (Contained at Rank 2) |
-| **P-5** | $79,494.46 | $68,118.85 | -14.31% |
-| **P-1** | $69,469.97 | $59,528.87 | -14.31% |
-| **P-4** | $59,791.62 | $51,235.49 | -14.31% |
+| Proposal | $R(p)$ | dPoS (USD) | AIPoX (USD) | Change |
+| :---: | :---: | ---: | ---: | :---: |
+| P-1 | 0.371357 | 185,913.06 | 359,604.95 | +93.43% |
+| P-2 | 0.482516 | 258,366.77 | 250,084.95 | −3.21% |
+| P-3 | 0.541779 | 216,930.25 | 183,625.88 | −15.35% |
+| P-4 | 0.599348 | 193,910.71 | 124,268.00 | −35.91% |
+| P-5 | 0.657715 | 144,879.21 | 82,416.21 | −43.11% |
 
-### Blockchain Performance (Ganache Testnet, 1,000 Discrete On-Chain Transactions)
-- **Mean Transaction Throughput:** 8.1 – 9.7 tx/s (over local HTTP RPC)
-- **Mean Round-Trip Latency:** 111.4 – 125.2 ms
-- **Voting Transaction Gas Cost:** Exactly 54,294 gas (deterministic, invariant)
-- **Threshold Attestation Gas Cost:** ~108,194 gas per proposal
-- **Total Blocks Minted:** 5,317 blocks
+### Attacks
+
+| Attack | Target | Effect on target allocation |
+| :--- | :---: | :--- |
+| Sybil: 1,500 identities, 1,500,000 tokens | P-5 | +28.59% (rank 1 under dPoS; rank 5 under AIPoX) |
+| Whale: 60% of supply, $P = 0.28$ | P-5 | +159.55% |
+| Whale: 60% of supply, $P = 0.98$ | P-5 | +160.14% |
+| Whale fragmented over 1,000 identities, $P = 0.98$ | P-5 | +385.34% (cap binding; P-5 becomes top proposal) |
+
+### On-chain test suite
+
+- 66 checks: 54 passed, 0 failed, 12 expected reverts (rejected as designed).
+- Expected reverts cover stale nonces, non-committee signers, repeated votes per epoch, votes after finalisation, out-of-sequence tranches and tranches exceeding the budget.
 
 ---
 
-## 8. Citation & Academic Inquiries
+## 8. Citation
 
-If you utilize this codebase, datasets, or architectural formulations in your research, please cite our paper:
+If you use this code, these datasets or the formulations, please cite the paper:
 
 ```bibtex
 @article{shahmohammadi2026aipox,
-  title={AIPoX: A hybrid consensus and governance framework for secure and meritocratic capital allocation in venture DAOs},
-  author={Shahmohammadi, Erfan and Sola, Yasser Elmi and Neghabi, Ali Akbar and Hasanpour, Hessam},
+  title={AIPoX: A hybrid consensus protocol for secure and meritocratic governance in venture capital DAOs},
+  author={Shahmohammadi, Erfan and Elmi Sola, Yasser and Neghabi, Ali Akbar and Hasanpour, Hessam},
   journal={Scientific Reports},
   year={2026},
   publisher={Nature Portfolio}
 }
 ```
 
-For technical questions regarding reproduction or smart contract verification, please submit an issue on the official GitHub repository.
-```
+For questions about reproduction or the smart contracts, please open an issue on this repository.
