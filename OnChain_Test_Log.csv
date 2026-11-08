@@ -1,50 +1,67 @@
 Suite,Test,Outcome,Detail
 setup,ModelHash is 32 bytes,PASS,
 setup,threshold file loaded,PASS,4359 bps
-setup,deployer balance sufficient,PASS,(721.95 > 92.10)
+setup,proposal roles from data,PASS,SAFE=P-1 RISKY=P-5
+setup,honest token total matches the final run,PASS,"11,160,518"
+setup,honest PoP total matches the final run,PASS,"5,293,376"
+setup,deployer balance sufficient,PASS,(640.78 > 105.30)
 setup,escrow EJECTION_BPS equals threshold.json,PASS,contract=4359 file=4359
 escrow,5 validators bonded,PASS,
 escrow,second unbond while one is pending,REJECTED,"('execution reverted: VM Exception while processing transaction: revert Unbond already pending', {'hash': None, 'programCounter': 1269, 'result': '0x08c379a0000"
 escrow,withdraw before unbonding delay,REJECTED,"('execution reverted: VM Exception while processing transaction: revert Unbonding in progress', {'hash': None, 'programCounter': 1269, 'result': '0x08c379a00000"
 escrow,withdrawal leaves 8 ETH bonded,PASS,bonded=8000000000000000000
-escrow,partial slash (0.10) keeps validator active,PASS,
+escrow,partial slash (0.10) keeps validator active,PASS,bonded=9000000000000000000
 escrow,replay of attested slash (stale nonce),REJECTED,"('execution reverted: VM Exception while processing transaction: revert Stale nonce', {'hash': None, 'programCounter': 1269, 'result': '0x08c379a000000000000000"
 escrow,slash signed by non-committee keys,REJECTED,"('execution reverted: VM Exception while processing transaction: revert Unauthorized committee signer', {'hash': None, 'programCounter': 1269, 'result': '0x08c3"
 escrow,zero anomaly rejected,REJECTED,"('execution reverted: VM Exception while processing transaction: revert Invalid anomaly bounds', {'hash': None, 'programCounter': 1269, 'result': '0x08c379a0000"
-escrow,active set contracted to 4,PASS,
 escrow,ejected validator is inactive and blacklisted,PASS,
 escrow,"75% of bond burned, 2.5 ETH remaining",PASS,bonded=2500000000000000000
-escrow,anomaly 4358 bps (just below tau) does not eject,PASS,
+escrow,anomaly 4358 bps (one below tau) does not eject,PASS,
 escrow,anomaly 4359 bps (equal to tau) ejects,PASS,
+setup,probe: minVoteStake read back,PASS,on-chain=0
 governance,C2: PoP above 10000 bps rejected,REJECTED,"('execution reverted: VM Exception while processing transaction: revert PoP out of range', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a0000000000"
+setup,base: minVoteStake read back,PASS,on-chain=0
 governance,"1,000 honest votes recorded",PASS,
-governance,C1: second vote by the same voter (other proposal),REJECTED,"('execution reverted: VM Exception while processing transaction: revert One vote per voter per epoch', {'hash': None, 'programCounter': 1635, 'result': '0x08c37"
+governance,C1: second vote by the same voter,REJECTED,"('execution reverted: VM Exception while processing transaction: revert One vote per voter per epoch', {'hash': None, 'programCounter': 1635, 'result': '0x08c37"
 governance,C5: re-open voting after finalisation,REJECTED,"('execution reverted: VM Exception while processing transaction: revert Invalid phase', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a0000000000000"
 governance,C5: vote after finalisation,REJECTED,"('execution reverted: VM Exception while processing transaction: revert Invalid phase', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a0000000000000"
 attestation,5 attestations accepted,PASS,nonce base 101
 governance,C3: R = 0 rejected,REJECTED,"('execution reverted: VM Exception while processing transaction: revert Risk out of bounds', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a00000000"
 ablation,variant 1 emitted 5 allocations,PASS,
+ablation,variant 1 sums to the pool,PASS,"sum 1,000,000.00 USD"
 ablation,variant 2 emitted 5 allocations,PASS,
+ablation,variant 2 sums to the pool,PASS,"sum 1,000,000.00 USD"
 ablation,variant 3 emitted 5 allocations,PASS,
+ablation,variant 3 sums to the pool,PASS,"sum 1,000,000.00 USD"
 ablation,variant 4 emitted 5 allocations,PASS,
-ablation,full allocation does not exceed the pool,PASS,"sum 1,000,000.00 USD"
-ablation,variant 4 cap respected for every proposal,PASS,
+ablation,variant 4 sums to the pool,PASS,"sum 1,000,000.00 USD"
+ablation,variant 4 does not exceed the 40% cap (cap non-binding in this run),PASS,
 ablation,lowest-R proposal P-1 gets the largest allocation in variants 3 and 4,PASS,
 tranche,tranche 1 releases exactly 25% of target,PASS,"89,901.24 USD"
 tranche,C7: tranche 1 repeated,REJECTED,"('execution reverted: VM Exception while processing transaction: revert Tranche out of sequence', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a000"
 tranche,C7: tranches exceed 100% budget,REJECTED,"('execution reverted: VM Exception while processing transaction: revert Tranches exceed budget', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a0000"
-sybil,"1,500 Sybil profiles registered",PASS,"1000 tokens, 0 PoP each"
+baseline,P-1 baseline matches the final run,PASS,"on-chain=359,604.95 expected=359,604.95"
+baseline,P-2 baseline matches the final run,PASS,"on-chain=250,084.95 expected=250,084.95"
+baseline,P-3 baseline matches the final run,PASS,"on-chain=183,625.88 expected=183,625.88"
+baseline,P-4 baseline matches the final run,PASS,"on-chain=124,268.00 expected=124,268.00"
+baseline,P-5 baseline matches the final run,PASS,"on-chain=82,416.21 expected=82,416.21"
+setup,sybil: minVoteStake read back,PASS,on-chain=0
+sybil,Sybil tokens equal 13.4% of honest supply,PASS,"1,500,000 tokens, 13.4402% of honest supply"
 attestation,5 attestations accepted,PASS,nonce base 201
 ablation,variant 4 emitted 5 allocations,PASS,
-ablation,full allocation does not exceed the pool,PASS,"sum 1,000,000.00 USD"
+ablation,variant 4 sums to the pool,PASS,"sum 1,000,000.00 USD"
 sybil,TreasuryAllocated emitted for all proposals,PASS,
+setup,whale P=0.28: minVoteStake read back,PASS,on-chain=0
 whale,[P=0.28] whale holds 60% of tokens,PASS,share=0.600000
+whale,[P=0.28] whale PoP share computed,PASS,0.0529%
 attestation,5 attestations accepted,PASS,nonce base 301
 ablation,variant 4 emitted 5 allocations,PASS,
-ablation,full allocation does not exceed the pool,PASS,"sum 1,000,000.00 USD"
+ablation,variant 4 sums to the pool,PASS,"sum 1,000,000.00 USD"
 whale,[P=0.28] TreasuryAllocated emitted for all proposals,PASS,
+setup,whale P=0.98: minVoteStake read back,PASS,on-chain=0
 whale,[P=0.98] whale holds 60% of tokens,PASS,share=0.600000
+whale,[P=0.98] whale PoP share computed,PASS,0.1848%
 attestation,5 attestations accepted,PASS,nonce base 301
 ablation,variant 4 emitted 5 allocations,PASS,
-ablation,full allocation does not exceed the pool,PASS,"sum 1,000,000.00 USD"
+ablation,variant 4 sums to the pool,PASS,"sum 1,000,000.00 USD"
 whale,[P=0.98] TreasuryAllocated emitted for all proposals,PASS,

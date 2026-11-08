@@ -297,3 +297,133 @@ E:\DAO-VC>py 01b_whale_fragmentation_sweep.py
 [check] honest baseline vs released Table 4: max deviation $4,024.3901
 [i] Baseline differs from the released Table 4 because identities below MIN_VOTE_STAKE (22 honest voters) are excluded by the stake rule. Report this as the stake-rule baseline.
 [DONE] wrote Table_7c_Whale_Fragmentation_Sweep.csv and OnChain_Whale_Sweep_Log.csv
+
+
+E:\DAO-VC>py 01_deploy_and_run_onchain.py
+
+================================================================================
+[SETUP] Compiling contracts with solc 0.8.19
+================================================================================
+[PASS] ModelHash is 32 bytes
+[PASS] threshold file loaded 4359 bps
+[PASS] proposal roles from data SAFE=P-1 RISKY=P-5
+[PASS] honest token total matches the final run 11,160,518
+[PASS] honest PoP total matches the final run 5,293,376
+[*] Deployer balance 640.78 ETH, estimated requirement 105.30 ETH
+[PASS] deployer balance sufficient (640.78 > 105.30)
+
+================================================================================
+[SUITE 1] PoA validator escrow
+================================================================================
+[PASS] escrow EJECTION_BPS equals threshold.json contract=4359 file=4359
+[PASS] 5 validators bonded
+[PASS] second unbond while one is pending: rejected -> ('execution reverted: VM Exception while processing transaction: revert Unbond already pending', {'hash': None, 'programCounter': 1269, 'result': '0x08c379a0000
+[PASS] withdraw before unbonding delay: rejected -> ('execution reverted: VM Exception while processing transaction: revert Unbonding in progress', {'hash': None, 'programCounter': 1269, 'result': '0x08c379a00000
+[PASS] withdrawal leaves 8 ETH bonded bonded=8000000000000000000
+[PASS] partial slash (0.10) keeps validator active bonded=9000000000000000000
+[PASS] replay of attested slash (stale nonce): rejected -> ('execution reverted: VM Exception while processing transaction: revert Stale nonce', {'hash': None, 'programCounter': 1269, 'result': '0x08c379a000000000000000
+[PASS] slash signed by non-committee keys: rejected -> ('execution reverted: VM Exception while processing transaction: revert Unauthorized committee signer', {'hash': None, 'programCounter': 1269, 'result': '0x08c3
+[PASS] zero anomaly rejected: rejected -> ('execution reverted: VM Exception while processing transaction: revert Invalid anomaly bounds', {'hash': None, 'programCounter': 1269, 'result': '0x08c379a0000
+[PASS] ejected validator is inactive and blacklisted
+[PASS] 75% of bond burned, 2.5 ETH remaining bonded=2500000000000000000
+[PASS] anomaly 4358 bps (one below tau) does not eject
+[PASS] anomaly 4359 bps (equal to tau) ejects
+
+================================================================================
+[SUITE 2] Governance, 4-way ablation and negative tests C1-C7
+================================================================================
+[PASS] probe: minVoteStake read back on-chain=0
+[PASS] C2: PoP above 10000 bps rejected: rejected -> ('execution reverted: VM Exception while processing transaction: revert PoP out of range', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a0000000000
+[PASS] base: minVoteStake read back on-chain=0
+[+] 1000 votes cast in 170.3s
+[PASS] 1,000 honest votes recorded
+[PASS] C1: second vote by the same voter: rejected -> ('execution reverted: VM Exception while processing transaction: revert One vote per voter per epoch', {'hash': None, 'programCounter': 1635, 'result': '0x08c37
+[PASS] C5: re-open voting after finalisation: rejected -> ('execution reverted: VM Exception while processing transaction: revert Invalid phase', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a0000000000000
+[PASS] C5: vote after finalisation: rejected -> ('execution reverted: VM Exception while processing transaction: revert Invalid phase', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a0000000000000
+[PASS] 5 attestations accepted nonce base 101
+[PASS] C3: R = 0 rejected: rejected -> ('execution reverted: VM Exception while processing transaction: revert Risk out of bounds', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a00000000
+[PASS] variant 1 emitted 5 allocations
+[PASS] variant 1 sums to the pool sum 1,000,000.00 USD
+[PASS] variant 2 emitted 5 allocations
+[PASS] variant 2 sums to the pool sum 1,000,000.00 USD
+[PASS] variant 3 emitted 5 allocations
+[PASS] variant 3 sums to the pool sum 1,000,000.00 USD
+[PASS] variant 4 emitted 5 allocations
+[PASS] variant 4 sums to the pool sum 1,000,000.00 USD
+[PASS] variant 4 does not exceed the 40% cap (cap non-binding in this run)
+[PASS] lowest-R proposal P-1 gets the largest allocation in variants 3 and 4
+[PASS] tranche 1 releases exactly 25% of target 89,901.24 USD
+[PASS] C7: tranche 1 repeated: rejected -> ('execution reverted: VM Exception while processing transaction: revert Tranche out of sequence', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a000
+[PASS] C7: tranches exceed 100% budget: rejected -> ('execution reverted: VM Exception while processing transaction: revert Tranches exceed budget', {'hash': None, 'programCounter': 1635, 'result': '0x08c379a0000
+[PASS] P-1 baseline matches the final run on-chain=359,604.95 expected=359,604.95
+[PASS] P-2 baseline matches the final run on-chain=250,084.95 expected=250,084.95
+[PASS] P-3 baseline matches the final run on-chain=183,625.88 expected=183,625.88
+[PASS] P-4 baseline matches the final run on-chain=124,268.00 expected=124,268.00
+[PASS] P-5 baseline matches the final run on-chain=82,416.21 expected=82,416.21
+            Architecture Variant Lowest-R Allocation ($) Highest-R Allocation ($)  Lowest-R Rank  Highest-R Rank Lowest-R Net Gain
+1. Token-only (traditional dPoS)             $185,913.06              $144,879.21              4               5  Baseline (0.00%)
+     2. Token + PoP (no AI gate)             $210,954.57              $157,267.25              3               5           +13.47%
+     3. Token + AI gate (no PoP)             $321,041.42               $76,912.08              1               5           +72.68%
+   4. Full AIPoX (PoP + AI gate)             $359,604.95               $82,416.21              1               5           +93.43%
+
+================================================================================
+[SUITE 3] 1,500-identity Sybil attack on P-5 (highest R)
+================================================================================
+[PASS] sybil: minVoteStake read back on-chain=0
+[PASS] Sybil tokens equal 13.4% of honest supply 1,500,000 tokens, 13.4402% of honest supply
+[PASS] 5 attestations accepted nonce base 201
+[PASS] variant 4 emitted 5 allocations
+[PASS] variant 4 sums to the pool sum 1,000,000.00 USD
+[PASS] TreasuryAllocated emitted for all proposals
+                                Quantity Before attack After attack
+                         Raw token votes       1616927      3116927
+                       Raw PoP sum (bps)        876191       876191
+                       totalActiveTokens      11160518     12660518
+                          Composite V(p)       1755183      2504156
+Direct token term (alpha x Sybil tokens)                     600000
+     Indirect term via totalActiveTokens                     148973
+           Relative increase of V(p) (%)                      42.67
+Proposal ID  Baseline AIPoX Allocation (USD)  Traditional Rank (Under Attack)  AIPoX Rank (Under Attack)  Post-Attack AIPoX Allocation (USD) Change (%)
+        P-1                        359604.95                                5                          1                           352318.10     -2.03%
+        P-2                        250084.95                                2                          2                           242176.61     -3.16%
+        P-3                        183625.88                                3                          3                           178794.10     -2.63%
+        P-4                        124268.00                                4                          4                           120731.63     -2.85%
+        P-5                         82416.21                                1                          5                           105979.56    +28.59%
+
+================================================================================
+[SUITE 4] 60% whale attack on P-5 (highest R)
+================================================================================
+[PASS] whale P=0.28: minVoteStake read back on-chain=0
+[PASS] [P=0.28] whale holds 60% of tokens share=0.600000
+[PASS] [P=0.28] whale PoP share computed 0.0529%
+[PASS] 5 attestations accepted nonce base 301
+[PASS] variant 4 emitted 5 allocations
+[PASS] variant 4 sums to the pool sum 1,000,000.00 USD
+[PASS] [P=0.28] TreasuryAllocated emitted for all proposals
+[P=0.28] whale PoP share 0.0529%
+Proposal ID  Baseline AIPoX Allocation (USD)  AIPoX Allocation Under Attack (USD) Net Distortion
+        P-1                        359604.95                            318916.48        -11.31%
+        P-2                        250084.95                            205969.40        -17.64%
+        P-3                        183625.88                            156662.96        -14.68%
+        P-4                        124268.00                            104537.22        -15.88%
+        P-5                         82416.21                            213913.94       +159.55%
+[PASS] whale P=0.98: minVoteStake read back on-chain=0
+[PASS] [P=0.98] whale holds 60% of tokens share=0.600000
+[PASS] [P=0.98] whale PoP share computed 0.1848%
+[PASS] 5 attestations accepted nonce base 301
+[PASS] variant 4 emitted 5 allocations
+[PASS] variant 4 sums to the pool sum 1,000,000.00 USD
+[PASS] [P=0.98] TreasuryAllocated emitted for all proposals
+[P=0.98] whale PoP share 0.1848%
+Proposal ID  Baseline AIPoX Allocation (USD)  AIPoX Allocation Under Attack (USD) Net Distortion
+        P-1                        359604.95                            318708.39        -11.37%
+        P-2                        250084.95                            205852.68        -17.69%
+        P-3                        183625.88                            156567.62        -14.74%
+        P-4                        124268.00                            104475.37        -15.93%
+        P-5                         82416.21                            214395.94       +160.14%
+
+================================================================================
+[DONE] All checks passed
+================================================================================
+66 of 66 recorded checks passed. Log: E:\DAO-VC\OnChain_Test_Log.csv
+[log] 66 rows written to E:\DAO-VC\OnChain_Test_Log.csv

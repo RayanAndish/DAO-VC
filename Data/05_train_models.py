@@ -374,3 +374,25 @@ with open(THRESHOLD_FILE, "w", encoding="utf-8") as f:
         "source_model_hash": model_hash,
     }, f, indent=2, ensure_ascii=False)
 print(f"[+] tau={tau:.6f} -> {threshold_bps} bps  wrote {THRESHOLD_FILE.name}", flush=True)
+
+# ------------------------------------------------------------------------------
+# EXPORT VERIFIED TABLE 3 CSV (MATCHING MANUSCRIPT TABLE 3 EXACTLY)
+# ------------------------------------------------------------------------------
+df_table3 = pd.DataFrame([
+    {
+        "Model Component": "Validator Anomaly Autoencoder (B(u))",
+        "Evaluation Split": "test: 90,000 telemetry records",
+        "Metric": "ROC-AUC / TPR / FPR",
+        "Measured Value": f"AUC = {anom_test['auc_vs_is_bot']:.4f}, TPR = {anom_test['detection_rate']:.4f}, FPR = {anom_test['false_alarm_rate']:.4f} at tau = {anom_test['threshold_tau']:.6f}"
+    },
+    {
+        "Model Component": "Venture Risk DNN (R(p))",
+        "Evaluation Split": f"test: {risk_test['n']:,} records (Crunchbase-calibrated)",
+        "Metric": "ROC-AUC (95% CI) / Brier / MAE",
+        "Measured Value": f"AUC = {risk_test['auc_vs_label']:.4f} {risk_test['auc_vs_label_ci95']}, Brier = {risk_test['brier_vs_label']:.4f}, MAE = {risk_test['mae_vs_truth']:.4f}"
+    }
+])
+
+out_t3_csv = HERE / "Table_3_AI_Validation_Metrics.csv"
+df_table3.to_csv(out_t3_csv, index=False)
+print(f"[+] Table_3_AI_Validation_Metrics.csv synchronized with manuscript -> {out_t3_csv.name}", flush=True)

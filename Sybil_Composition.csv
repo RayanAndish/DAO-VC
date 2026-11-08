@@ -1,0 +1,8 @@
+Quantity,Before attack,After attack
+Raw token votes,1616927,3116927
+Raw PoP sum (bps),876191,876191
+totalActiveTokens,11160518,12660518
+Composite V(p),1755183,2504156
+Direct token term (alpha x Sybil tokens),,600000
+Indirect term via totalActiveTokens,,148973
+Relative increase of V(p) (%),,42.67
